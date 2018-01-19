@@ -2,7 +2,9 @@
 import subprocess
 import argparse
 import sys
+import os
 
+from apkhandling import builder
 
 # tasks:
 # - write/include argument parser
@@ -53,11 +55,7 @@ def parseArgs():
 def isInstalled(program):
     proc = subprocess.Popen(["which " + program], stdout=subprocess.PIPE, shell=True)
     (out, err) = proc.communicate()
-    if out != "":
-        return True
-    else:
-        return False
-
+    return out != ""
 
 def main():
     global args
@@ -80,5 +78,5 @@ def main():
         proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
         (out, err) = proc.communicate()
 
-    
+
 main()
