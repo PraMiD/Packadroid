@@ -12,7 +12,7 @@ def decompileApk(apkPath):
     """
     if not os.path.isfile(apkPath):
         raise Exception("Cannot find apk file at path {}".format(apkPath))
-    outDir = os.path.join(os.path.splitext(apkPath), "_decompiled")
+    outDir = os.path.join(os.path.splitext(apkPath)[0], "_decompiled")
     os.system("apktool d -o {} {}".format(outDir, apkPath))
     return outDir
 
