@@ -99,3 +99,51 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# User-specific stuff:
+Automated_Repackager/.idea/**/workspace.xml
+Automated_Repackager/.idea/**/tasks.xml
+
+# Sensitive or high-churn files:
+Automated_Repackager/.idea/**/dataSources/
+Automated_Repackager/.idea/**/dataSources.ids
+Automated_Repackager/.idea/**/dataSources.xml
+Automated_Repackager/.idea/**/dataSources.local.xml
+Automated_Repackager/.idea/**/sqlDataSources.xml
+Automated_Repackager/.idea/**/dynamic.xml
+Automated_Repackager/.idea/**/uiDesigner.xml
+
+# Gradle:
+Automated_Repackager/.idea/**/gradle.xml
+Automated_Repackager/.idea/**/libraries
+
+# CMake
+cmake-build-debug/
+cmake-build-release/
+
+# Mongo Explorer plugin:
+Automated_Repackager/.idea/**/mongoSettings.xml
+
+## File-based project format:
+*.iws
+
+## Plugin-specific files:
+
+# IntelliJ
+Automated_Repackager/out/
+
+# mpeltonen/sbt-idea plugin
+Automated_Repackager/.idea_modules/
+
+# JIRA plugin
+Automated_Repackager/atlassian-ide-plugin.xml
+
+# Cursive Clojure plugin
+Automated_Repackager/.idea/replstate.xml
+
+# Crashlytics plugin (for Android Studio and IntelliJ)
+Automated_Repackager/com_crashlytics_export_strings.xml
+Automated_Repackager/crashlytics.properties
+Automated_Repackager/crashlytics-build.properties
+fabric.properties
+
