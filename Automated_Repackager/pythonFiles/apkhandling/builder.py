@@ -28,6 +28,7 @@ def repackApk(decompiledPath):
     """
     if not os.path.isdir(decompiledPath):
         raise Exception("Cannot find the decompiled apk at path {}".format(decompiledPath))
-    repackedApk = os.path.join(decompiledPath.replace("_decompiled", ""), ".apk")
-    os.system("apktool b -o {} {}".format(decompiledPath, repackedApk))
+    repackedApk = "backdoored.apk"
+    print decompiledPath, repackedApk
+    os.system("apktool b -o {} {}".format(repackedApk, decompiledPath))
     return repackedApk

@@ -67,7 +67,7 @@ def fix_manifest(payload_manifest_path, original_manifest_path,
         if "uses-permission" in line and inject == 0:
             for permission in add_permissions:
                 print permission
-                novel_manifest.append("<uses-permission android:name=" + permission + "/>")
+                novel_manifest.append("<uses-permission android:name=\"" + permission + "\" />")
             novel_manifest.append(line)
             inject = 1
         else:
