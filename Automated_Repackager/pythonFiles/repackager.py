@@ -83,7 +83,7 @@ def run_jarsigner(command):
     """ executes the jarsigner with specific options 
         given in the 'command' argument"""
     full_command = "jarsigner " + command
-    proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+    proc = subprocess.Popen(full_command, stdout=subprocess.PIPE, shell=True)
     (out, err) = proc.communicate()
     print out
     print err

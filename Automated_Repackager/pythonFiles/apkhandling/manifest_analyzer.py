@@ -25,11 +25,17 @@ def find_launcher_activity(manifest_path):
 
     for activity in activities:
         # print activity
-        intent_filters = [x for x in activity if x.tag == 'intent-filter' and x.attrib != {}]
+        intent_filters = [x for x in activity if x.tag == 'intent-filter']
         for intent_filter in intent_filters:
-            for category in intent_filter:
-                if category.tag == 'category':
+            for action in [x for x in intent_filter if x.tag == 'action']:
+                if ('{http://schemas.android.com/apk/res/android}name' in action.attrib
+                    and action.attrib['{http://schemas.android.com/apk/res/android}name'] == "android.intent.action.MAIN"):
                     activities_with_intent_filter.append(get_activity_name(activity))
+
+            if intent_filter.attrib != {}:
+                for category in intent_filter:
+                    if category.tag == 'category':
+                        activities_with_intent_filter.append(get_activity_name(activity))
     return list(set(activities_with_intent_filter))
 
 
@@ -80,7 +86,4 @@ def fix_manifest(payload_manifest_path, original_manifest_path,
 
 if __name__ == "__main__":
     x = find_launcher_activity('../AndroidManifest.xml')
-    y = fix_manifest("../payload/_decompiled/AndroidManifest.xml",
-                     "../original/_decompiled/AndroidManifest.xml",
-                     "AndroidManifest.xml")
     print(y)
