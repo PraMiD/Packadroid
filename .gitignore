@@ -102,3 +102,9 @@ ENV/
 
 # User-specific stuff:
 Automated_Repackager/.idea/
+
+# No vs code files
+*.vscode
+
+# no apks
+*.apk
