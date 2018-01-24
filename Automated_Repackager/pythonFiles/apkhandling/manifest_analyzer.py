@@ -63,11 +63,11 @@ def add_permissions_to_manifest(original_manifest_path, output_manifest_path, no
     """
     original_permissions = get_permissions(original_manifest_path)
 
-    add_permissions = [x for x in novel_permissions for x not in original_permissions]
+    add_permissions = [x for x in novel_permissions if x not in original_permissions]
 
     manifest_lines = []
     with open(original_manifest_path) as f:
-        manifest_lines.extend(f.readlines())
+        manifest_lines.extend(f.read().splitlines())
 
     inject = 0
     novel_manifest = []
@@ -75,7 +75,7 @@ def add_permissions_to_manifest(original_manifest_path, output_manifest_path, no
         if "uses-permission" in line and inject == 0:
             for permission in add_permissions:
                 print permission
-                novel_manifest.append("<uses-permission android:name=\"" + permission + "\" />")
+                novel_manifest.append("    <uses-permission android:name=\"" + permission + "\" />")
             novel_manifest.append(line)
             inject = 1
         else:
@@ -83,6 +83,33 @@ def add_permissions_to_manifest(original_manifest_path, output_manifest_path, no
 
     export_data(novel_manifest, output_manifest_path)
 
+
+def add_receiver(manifest_path, receiver):
+    """
+    Adds the given receiver to the manifest on the given path inside of the application bound (<application>...</application>)
+
+    :param manifest_path: Path of the manifest file
+    :type manifest_path: str
+    :param receiver: The Broadcast receiver which has to be added
+    :type receiver: str
+
+    :return
+    pass
+    """
+
+    manifest_lines = []
+    with open(manifest_path) as f:
+        manifest_lines.extend(f.read().splitlines())
+    
+    novel_manifest = []
+    inserted = False
+    for line in manifest_lines:
+        novel_manifest.append(line)
+        if "<application" in line and not inserted:
+            novel_manifest.append(receiver)
+            inserted = True
+
+    export_data(novel_manifest, manifest_path)
 
 def export_data(data, out_path):    
     """
@@ -93,7 +120,10 @@ def export_data(data, out_path):
     """
     with open(out_path, "w") as f:
         for item in data:
-            f.write(item + "\n")
+            if item != "\n":
+                f.write(item + "\n")
+            else:
+                f.write(item)
 
 
 
