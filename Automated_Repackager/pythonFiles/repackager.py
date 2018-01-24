@@ -159,13 +159,22 @@ def main():
     print "[*] Decompiling payload APK..\n"
     builder.decompileApk("payload.apk")
 
+    print "Exploitable activities: "
+    exploitable_activities = manifest_analyzer.find_launcher_activities('original/_decompiled/AndroidManifest.xml')
+    for i in range(len(exploitable_activities)):
+        print("[{}.] {}".format(i, exploitable_activities[i]))
+    print 
+    index = int(input("Which activity should be hooked?"))
+    launcher_activity = exploitable_activities[index]
+    print("Successfully selected {} entry point.".format(exploitable_activities[index]))
+
     # read the manifest to xml model
     print "Reading android manifest"
 
-    launcher_activity = manifest_analyzer.find_launcher_activity('original/_decompiled/AndroidManifest.xml')
-    print "[*] Launcheractivity: {} ".format(launcher_activity[0])
+    #launcher_activity = manifest_analyzer.find_launcher_activities('original/_decompiled/AndroidManifest.xml')[0]
+    print "[*] Launcheractivity: {} ".format(launcher_activity)
 
-    smali_file = 'original/_decompiled/smali/{}.smali'.format(launcher_activity[0].replace(".", "/"))
+    smali_file = 'original/_decompiled/smali/{}.smali'.format(launcher_activity.replace(".", "/"))
 
     print smali_file
     time.sleep(10)

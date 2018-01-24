@@ -8,10 +8,11 @@ def get_activity_name(activity):
             return activity.attrib[key]
 
 
-def find_launcher_activity(manifest_path):
+def find_launcher_activities(manifest_path):
     """
         Finds the launcher activity (or multiple) from xml.etree.ElementTree.
         Given: Manifest Path
+        :return: List of launchar activities that allow hooking
     """
     tree = ET.parse(manifest_path)
     root = tree.getroot()
