@@ -52,18 +52,18 @@ def get_permissions(manifest_path):
     return list(set(permissions))
 
 
-def fix_manifest(payload_manifest_path, original_manifest_path,
-                 output_manifest_path):
+def add_permissions_to_manifest(original_manifest_path, output_manifest_path, novel_permissions):
     """
-        Fix manifest located at the provided manifest path.
-        :param manifest_path:
-        :return:
-    """
-    payload_permissions = get_permissions(payload_manifest_path)
+        Add additional permissions to the manifest.
+        This method ensures that no permissions are duplicated within the resulting manifest.
 
+        :param original_manifest_path: Path of the original manifest file
+        :param output_manifest_path: Path where the modified manifest is exported to
+        :param novel_permissions: List(!) of permissions, given as strings
+    """
     original_permissions = get_permissions(original_manifest_path)
 
-    add_permissions = [x for x in payload_permissions if x not in original_permissions]
+    add_permissions = [x for x in novel_permissions for x not in original_permissions]
 
     manifest_lines = []
     with open(original_manifest_path) as f:
@@ -81,9 +81,34 @@ def fix_manifest(payload_manifest_path, original_manifest_path,
         else:
             novel_manifest.append(line)
 
-    with open(output_manifest_path, "w") as f:
-        for line in novel_manifest:
-            f.write(line + "\n")
+    export_data(novel_manifest, output_manifest_path)
+
+
+def export_data(data, out_path):    
+    """
+        Exports a list of data items to a given output path.
+        Each item is stored in a seperate line.
+        :param data: List of data items
+        :param out_path: Path to store the data
+    """
+    with open(out_path, "w") as f:
+        for item in data:
+            f.write(item + "\n")
+
+
+
+def fix_manifest(payload_manifest_path, original_manifest_path,
+                 output_manifest_path):
+    """
+        Fix manifest located at the provided manifest path.
+        TODO: provide list of additional permissions to be added
+        :param manifest_path:
+        :return:
+    """
+    payload_permissions = get_permissions(payload_manifest_path)
+
+    add_permissions_to_manifest(original_manifest_path, output_manifest_path, payload_permissions);
+
 
 
 if __name__ == "__main__":
