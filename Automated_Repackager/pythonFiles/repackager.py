@@ -129,6 +129,9 @@ def main():
     (out, err) = proc.communicate()
     print out
 
+    activities = manifest_analyzer.find_launcher_activity('original/_decompiled/AndroidManifest.xml')
+    sys.exit(0)
+
     print "[*] Decompiling orignal APK..\n"
     builder.decompileApk("original.apk")
     print "[*] Decompiling payload APK..\n"
