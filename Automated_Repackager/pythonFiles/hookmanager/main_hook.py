@@ -6,7 +6,7 @@ import os
 def generate_hooked_smali(smali_path):
     """
         Create the hooked smali.
-        Note that smali_path points to the file with the original smalli code
+        Note that smali_path points to the file with the original smali code
     """
     #read smali file
     activity_smali = []
