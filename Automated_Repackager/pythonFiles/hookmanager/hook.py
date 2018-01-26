@@ -1,5 +1,5 @@
 class Hook:
-    def __init__(self, t, location, cls, method):
+    def __init__(self, t, location, cls, method, payload_path):
         """
             Create a new hook for the currently handled application.
             This object contains all relevant information necessary to place the hook at the user defined location.
@@ -18,11 +18,15 @@ class Hook:
             :param method: The method the user wants to call from the given class.
                             The method MUST be declared public and static
             :type method: str
+
+            :param payload_path: Path to the decompiled payload we want to inject.
+            :type payload_path: str
         """
         self.__type = t
         self.__location = location
         self.__class = cls
         self.__method = method
+        self.__payload_path = payload_path
 
     def get_type(self):
         return self.__type
@@ -35,3 +39,6 @@ class Hook:
 
     def get_method(self):
         return self.__method
+
+    def get_payload_path(self):
+        return self.__payload_path
