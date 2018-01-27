@@ -195,9 +195,9 @@ def main():
     #print out
 
     print "[*] Decompiling orignal APK..\n"
-    builder.decompileApk("original.apk")
+    builder.decompile_apk("original.apk")
     print "[*] Decompiling payload APK..\n"
-    builder.decompileApk("payload.apk")
+    builder.decompile_apk("payload.apk")
 
 
     print "Exploitable activities: "
