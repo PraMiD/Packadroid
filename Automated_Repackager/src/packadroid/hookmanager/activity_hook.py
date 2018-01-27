@@ -47,7 +47,7 @@ def __inject_hook_call(original_apk, activity, hooks):
     smali_path = os.path.join(original_apk, "smali", activity.replace(".", "/"))
 
     if not os.path.isfile(smali_path):
-        print("Cannot load smali file for activity {} at path {}!".format(activity, smali_path)
+        print("Cannot load smali file for activity {} at path {}!".format(activity, smali_path))
         return
 
     print("Hooking activity: {}".format(activity))

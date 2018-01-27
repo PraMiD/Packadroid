@@ -1,5 +1,5 @@
 import xml.etree.ElementTree as ET
-import manifest_analyzer
+from packadroid.manifestmanager import *
 
 def get_activity_name(activity):
     """returns name of xml encoded activity. (name may be dirty with android tags)"""
@@ -25,7 +25,6 @@ def find_launcher_activities(manifest_path):
     activities_with_intent_filter = []
 
     for activity in activities:
-        # print activity
         intent_filters = [x for x in activity if x.tag == 'intent-filter']
         for intent_filter in intent_filters:
             #for action in [x for x in intent_filter if x.tag == 'action']:
@@ -75,7 +74,6 @@ def add_permissions_to_manifest(original_manifest_path, output_manifest_path, no
     for line in manifest_lines:
         if "uses-permission" in line and inject == 0:
             for permission in add_permissions:
-                print permission
                 novel_manifest.append("    <uses-permission android:name=\"" + permission + "\" />")
             novel_manifest.append(line)
             inject = 1
@@ -138,10 +136,4 @@ def fix_manifest(payload_manifest_path, original_manifest_path,
     """
     payload_permissions = manifest_analyzer.get_permissions(payload_manifest_path)
 
-    add_permissions_to_manifest(original_manifest_path, output_manifest_path, payload_permissions);
-
-
-
-if __name__ == "__main__":
-    x = find_launcher_activity('../AndroidManifest.xml')
-    print(y)
+    add_permissions_to_manifest(original_manifest_path, output_manifest_path, payload_permissions)

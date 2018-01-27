@@ -1,6 +1,6 @@
 import sys
-sys.path.append('../')
-from manifestmanager import manifest_changer
+
+from packadroid.manifestmanager import manifest_changer
 
 
 
