@@ -10,6 +10,13 @@ class Hook:
             :param location: Location of the hook. This parameter is type-dependent.
                             If the type is 'activity', this parameter contains the activity we want to hook.
                             If the type is 'broadcast_receiver', the parameter contains the broadcast we want to react to.
+                                - Possible values:
+                                    -> on_power_connected
+                                    -> on_power_disconnected
+                                    -> on_boot_completed
+                                    -> on_receive_sms
+                                    -> on_incoming_call
+                                    -> on_outgoing_call
             :type location: str
 
             :param cls: The hook will call the given static method of the class specified with this parameter.
@@ -42,3 +49,10 @@ class Hook:
 
     def get_payload_path(self):
         return self.__payload_path
+
+    def print_hook(self):
+        print("Type: " + self.__type)
+        print("Location: " + self.__location)
+        print("Class: " + self.__class)
+        print("Method: " + self.__method)
+        print("Payload Path: " + self.__payload_path)
