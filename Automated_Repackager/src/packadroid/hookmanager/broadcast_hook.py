@@ -1,6 +1,4 @@
-import sys
-sys.path.append('../')
-from packadroid.manifestmanager import manifest_changer
+from packadroid.manifestmanagerimport import manifest_changer
 from packadroid.hookmanager.hook import Hook
 
 
