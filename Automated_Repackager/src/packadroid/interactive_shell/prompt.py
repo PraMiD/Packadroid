@@ -3,6 +3,7 @@ import sys
 from cmd import Cmd
 from packadroid.interactive_shell.packadroid_session import PackadroidSession
 from packadroid.hookmanager.hook import Hook
+import inspect
 
 ERR = True
 SUC = False
@@ -18,6 +19,20 @@ class PackadroidPrompt(Cmd):
         while True:
             # There might be errors while executing a command, but we want to keep the prompt open
             self.cmdloop("")
+
+    def do_help(self, args):
+        """ Usage: help - shows available methods without problems"""
+        x = inspect.getmembers(PackadroidPrompt)
+        print "Available methods"
+        for tuple in x:
+            if tuple[0].startswith("do_"):
+                line = tuple[0][3:].ljust(30)
+                if tuple[1].__doc__ is None:
+                    line += "<no documentation available>"
+                else:
+                    line += str(tuple[1].__doc__)
+                print(line)
+        #print x
 
     def do_load_original(self, args):
         """ Usage: load_original <path_to_original_apk> -- Load an .apk file you want inject code to. """
@@ -40,13 +55,13 @@ class PackadroidPrompt(Cmd):
         print("If you really want to discard all changes and exit, add -f to the exit command!")
         return ERR
 
-    def load_activities(self, args):
+    def do_load_activities(self, args):
         """ Usage: load_activities <manifest_path.xml> -- Load all activities from an Android manifest. """
         args = args.split(" ")
-        if len(args) != 1:
+        if len(args) != 1 or not args[0].endswith(".xml"):
             print("You have to provide a valid path to an .xml Android Manifest file!")
             return ERR
-        self.__packadroid_session.load_activities(args[0]))
+        self.__packadroid_session.load_activities(args[0])
         return SUC
 
     def do_repack(self, args):
