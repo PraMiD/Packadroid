@@ -133,7 +133,7 @@ def inject_broadcast_receiver_hooks(original_apk_path, hooks):
         if h.get_type() != "broadcast_receiver":
             print("Broadcast hook got hook object which is no broadcast_receiver")
             continue
-
+        print(h)
         hook_type = h.get_location()
         if hook_type == "on_power_connected":
             opc = True
@@ -157,8 +157,8 @@ def inject_broadcast_receiver_hooks(original_apk_path, hooks):
     #TODO
     manifest_path = hooks[0].get_payload_dec_path().split("smali/")[0] + "AndroidManifest.xml"
 
-    __inject_smali(package, classname, methodname)
-    __fix_manifest(manifest_path, package)
+    #__inject_smali(package, classname, methodname)
+    #__fix_manifest(manifest_path, package)
     
 
 #def main():
