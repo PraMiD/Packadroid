@@ -41,6 +41,7 @@ args = {}
 def parseArgs():
     global args
     parser = argparse.ArgumentParser(description="")
+    parser.add_argument("-b", "--batch", action="store", dest="batch", default=None)
     parser.add_argument("-o", "--original", action="store", dest="original_apk", default="")
     parser.add_argument("-m", "--malware", action="store", dest="malware_apk", default="")
     parser.add_argument("-out", "--output", action="store", dest="output_dir", default="")
@@ -252,6 +253,17 @@ def main():
         print("[*] Start the handler for meterpreter on IP: " + args['meterpreter_ip'] + " Port: " + args['meterpreter_port'])
         start_meterpreter_handler()
 
+parseArgs()
 prompt = PackadroidPrompt()
+if args['batch'] is not None:
+    cmds = []
+    batch_file = args['batch']
+    if not os.path.isfile(batch_file):
+        print("Cannot load batch file from location {}".format(batch_file))
+        sys.exit(1)
+    with open(batch_file, "r") as f:
+        cmds = f.readlines()
+    # Execute the commands given in the batch file first!
+    prompt.execute_commands(cmds)
 prompt.start()
 main()

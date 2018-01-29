@@ -1,4 +1,4 @@
-from packadroid.manifestmanagerimport import manifest_changer
+from packadroid.manifestmanager import manifest_changer
 from packadroid.hookmanager.hook import Hook
 
 
@@ -52,7 +52,7 @@ def __fix_manifest(manifest_path, package):
 
     rec += '            </intent-filter>\n        </receiver>'
 
-    print rec
+    print(rec)
     #manifest_changer.add_receiver(manifest_path, rec)
     # add permissions
     #manifest_changer.add_permissions_to_manifest(manifest_path, manifest_path, permissions)
@@ -116,7 +116,7 @@ def __inject_smali(package, classname, methodname):
     #    f.write(smali)
 
 
-def inject_broadcast_hooks(hooks):
+def inject_broadcast_receiver_hooks(original_apk_path, hooks):
     """
     Injects different hooks into the original application. These hooks are launched on the intents given in the parameters. The broadcast hooks are generated based on a given list of object hooks
     
@@ -124,9 +124,10 @@ def inject_broadcast_hooks(hooks):
     :type hooks: list
 
     :return
-    pass
     """
     global path, obc, opdc, opc, ors, oic, ooc
+
+    raise Exception("Use original_apk_path to find Manifest")
 
     for h in hooks:
         if h.get_type() != "broadcast_receiver":

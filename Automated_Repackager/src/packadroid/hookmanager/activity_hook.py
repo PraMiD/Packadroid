@@ -1,7 +1,7 @@
 import errno
 import os
 
-def hook_activities(hooks, original_apk):
+def inject_activity_hooks(hooks, original_apk):
     """
         Create the hooked smali.
 
@@ -21,6 +21,8 @@ def hook_activities(hooks, original_apk):
 
     activities = {}
     for hook in hooks:
+        if hook.get_type() != "activity":
+            continue
         location = hook.get_location()
         if location not in activities.keys():
             activities[location] = []
