@@ -8,7 +8,7 @@ def get_activity_name(activity):
             return activity.attrib[key]
 
 
-def find_launcher_activity(manifest_path):
+def find_launcher_activities(manifest_path):
     """
         Finds the launcher activity (or multiple) from xml.etree.ElementTree.
         Given: Manifest Path
@@ -51,41 +51,3 @@ def get_permissions(manifest_path):
 
     return list(set(permissions))
 
-
-def fix_manifest(payload_manifest_path, original_manifest_path,
-                 output_manifest_path):
-    """
-        Fix manifest located at the provided manifest path.
-        :param manifest_path:
-        :return:
-    """
-    payload_permissions = get_permissions(payload_manifest_path)
-
-    original_permissions = get_permissions(original_manifest_path)
-
-    add_permissions = [x for x in payload_permissions if x not in original_permissions]
-
-    manifest_lines = []
-    with open(original_manifest_path) as f:
-        manifest_lines.extend(f.readlines())
-
-    inject = 0
-    novel_manifest = []
-    for line in manifest_lines:
-        if "uses-permission" in line and inject == 0:
-            for permission in add_permissions:
-                print permission
-                novel_manifest.append("<uses-permission android:name=\"" + permission + "\" />")
-            novel_manifest.append(line)
-            inject = 1
-        else:
-            novel_manifest.append(line)
-
-    with open(output_manifest_path, "w") as f:
-        for line in novel_manifest:
-            f.write(line + "\n")
-
-
-if __name__ == "__main__":
-    x = find_launcher_activity('../AndroidManifest.xml')
-    print(y)
