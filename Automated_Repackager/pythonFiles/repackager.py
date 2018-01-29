@@ -155,7 +155,9 @@ def main():
     print out
 
     activities = manifest_analyzer.find_launcher_activity('original/_decompiled/AndroidManifest.xml')
-    sys.exit(0)
+    for activity in activities:
+        print(activity)
+    
 
     print "[*] Decompiling orignal APK..\n"
     builder.decompileApk("original.apk")
