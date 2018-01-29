@@ -51,7 +51,7 @@ class PackadroidSession():
             return None
 
         activity_hooks = [h for h in self.get_hooks() if h.get_type() == "activity"]
-        broadcast_hooks = [h for h in self.get_hooks() if h.type == "broadcast_receiver"]
+        broadcast_hooks = [h for h in self.get_hooks() if h.get_type() == "broadcast_receiver"]
 
         print("Inserting activity hooks.")
         activity_hook.inject_activity_hooks(self.__original_apk_dec_path, activity_hooks)
