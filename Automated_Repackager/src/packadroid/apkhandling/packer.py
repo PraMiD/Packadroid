@@ -2,6 +2,8 @@ import os
 import shutil
 import subprocess as sp
 
+from packadroid.manifestmanager import manifest_analyzer, manifest_changer
+
 def decompile_apk(apkPath):
     """
     Decompile the .apk file given as parameter.
@@ -63,3 +65,14 @@ def __inject_payload(original_apk, hooks):
         for subf in os.listdir(payload):
             if subf is not "android":
                 os.system("cp -r {} {}".format(os.path.join(payload, subf), original_apk))
+
+def __add_necessary_permissions(original_apk, hooks):
+    original_apk_manifest_path = os.path.join(original_apk, "AndroidManifest.xml")
+    original_permissions = manifest_analyzer.get_permissions(original_apk_manifest_path)
+
+    payload_permissions = []
+    for hook in hooks:
+        payload_permissions.extend(manifest_analyzer.get_permissions(os.path.join(hook.get_dec_apk_path(), "AndroidManifest.xml")))
+
+    payload_permissions = set(payload_permissions)
+    manifest_changer.add_permissions_to_manifest(original_apk_manifest_path, payload_permissions.difference(original_permissions))

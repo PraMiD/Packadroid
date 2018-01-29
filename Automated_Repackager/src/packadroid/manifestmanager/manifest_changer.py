@@ -52,15 +52,19 @@ def get_permissions(manifest_path):
     return list(set(permissions))
 
 
-def add_permissions_to_manifest(original_manifest_path, output_manifest_path, novel_permissions):
+def add_permissions_to_manifest(original_manifest_path, output_manifest_path=None, novel_permissions):
     """
         Add additional permissions to the manifest.
         This method ensures that no permissions are duplicated within the resulting manifest.
 
         :param original_manifest_path: Path of the original manifest file
-        :param output_manifest_path: Path where the modified manifest is exported to
+        :param output_manifest_path: Path where the modified manifest is exported to. 
+                                        If this parameter is left at its default value,
+                                        we will write the manifest back to its original path.
         :param novel_permissions: List(!) of permissions, given as strings
     """
+    if output_manifest_path is None:
+        output_manifest_path = original_manifest_path
     original_permissions = manifest_analyzer.get_permissions(original_manifest_path)
 
     add_permissions = [x for x in novel_permissions if x not in original_permissions]

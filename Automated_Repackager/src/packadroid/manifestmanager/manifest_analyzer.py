@@ -50,4 +50,3 @@ def get_permissions(manifest_path):
     permissions = [x.attrib["{http://schemas.android.com/apk/res/android}name"] for x in permissions]
 
     return list(set(permissions))
-
