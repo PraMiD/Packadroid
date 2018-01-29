@@ -151,11 +151,11 @@ def inject_broadcast_receiver_hooks(original_apk_path, hooks):
     # package, class and method are equal for each broadcast hook
     # extract package name from payload path
     # package name always begins after subfolder smali
-    package =  hooks[0].get_payload_path().split("smali/")[-1]
+    package =  hooks[0].get_payload_dec_path().split("smali/")[-1]
     classname = hooks[0].get_class()
     methodname = hooks[0].get_method()
     #TODO
-    manifest_path = hooks[0].get_payload_path().split("smali/")[0] + "AndroidManifest.xml"
+    manifest_path = hooks[0].get_payload_dec_path().split("smali/")[0] + "AndroidManifest.xml"
 
     __inject_smali(package, classname, methodname)
     __fix_manifest(manifest_path, package)

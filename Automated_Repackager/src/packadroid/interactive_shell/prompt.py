@@ -63,12 +63,12 @@ class PackadroidPrompt(Cmd):
         return SUC
 
     def do_add_activity_hook(self, args):
-        """ Usage: add_activity_hook <activity> <payload_path> <class> <method> -- Add a new hook to the given activity for the given payload. """
+        """ Usage: add_activity_hook <activity> <payload_apk_path> <class> <method> -- Add a new hook to the given activity for the given payload. """
         args = args.split(" ")
         if len(args) < 4:
             print("Unknown format!")
             return ERR
-        self.__packadroid_session.add_hook(Hook("activity", args[0], args[2], args[3], args[1]))
+        self.__packadroid_session.add_hook("activity", args[0], args[2], args[3], args[1])
         return SUC
 
     def execute_commands(self, cmds):
@@ -79,7 +79,7 @@ class PackadroidPrompt(Cmd):
         :type cmds: [str]
         """
         for cmd in cmds:
-            if self.onecmd(cmd): # Stop -> An error happened!
+            if self.onecmd(cmd): # Stop -> An error happened in one of the commands!
                 self.__exit(1)
 
     def __setup_session(self):

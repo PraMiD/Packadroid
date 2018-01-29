@@ -58,7 +58,7 @@ def __inject_payload(original_apk, hooks):
     """
 
     original = os.path.join(original_apk, "smali")
-    payload_paths = set([h.get_payload_path() for h in hooks])
+    payload_paths = set([h.get_payload_dec_path() for h in hooks])
     for path in payload_paths:
         payload = os.path.join(path, "smali")
         for subf in os.listdir(payload):

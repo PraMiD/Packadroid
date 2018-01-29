@@ -1,5 +1,5 @@
 class Hook:
-    def __init__(self, t, location, cls, method, payload_path):
+    def __init__(self, t, location, cls, method, payload_apk_path, payload_dec_path):
         """
             Create a new hook for the currently handled application.
             This object contains all relevant information necessary to place the hook at the user defined location.
@@ -26,14 +26,18 @@ class Hook:
                             The method MUST be declared public and static
             :type method: str
 
-            :param payload_path: Path to the decompiled payload we want to inject.
-            :type payload_path: str
+            :param payload_apk_path: Path to the .apk file of the payload.
+            :type payload_apk_path: str
+
+            :param payload_dec_path: Path to the decompiled payload we want to inject.
+            :type payload_dec_path: str
         """
         self.__type = t
         self.__location = location
         self.__class = cls
         self.__method = method
-        self.__payload_path = payload_path
+        self.__payload_apk_path = payload_apk_path
+        self.__payload_dec_path = payload_dec_path
 
     def get_type(self):
         return self.__type
@@ -47,12 +51,16 @@ class Hook:
     def get_method(self):
         return self.__method
 
-    def get_payload_path(self):
-        return self.__payload_path
+    def get_payload_dec_path(self):
+        return self.__payload_dec_path
+    
+    def get_payload_apk_path(self):
+        return self.__payload_apk_path
 
     def print_hook(self):
         print("Type: " + self.__type)
         print("Location: " + self.__location)
         print("Class: " + self.__class)
         print("Method: " + self.__method)
-        print("Payload Path: " + self.__payload_path)
+        print("Payload APK: " + self.__payload_apk_path)
+        print("Payload Path: " + self.__payload_dec_path)

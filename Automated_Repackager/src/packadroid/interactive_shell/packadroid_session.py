@@ -3,7 +3,7 @@ import os
 
 from packadroid.apkhandling import packer
 from packadroid.hookmanager import activity_hook
-from packadroid.hookmanager import broadcast_hook
+from packadroid.hookmanager import broadcast_hook, hook
 
 class PackadroidSession():
     def __init__(self):
@@ -31,8 +31,16 @@ class PackadroidSession():
         print("Decompiled {} to {}".format(apk_path, self.__original_apk_dec_path))
         return self.__original_apk_dec_path
 
-    def add_hook(self, hook):
-        self.__hooks.append(hook)
+    def add_hook(self, t, location, class_name, method_name, payload_apk_path):
+        same_apk = [h for h in self.__hooks if h.get_payload_apk_path == payload_apk_path]
+        if (len(same_apk)) < 1:
+            # We have not decompiled this apk before
+            payload_dec_path = packer.decompile_apk(payload_apk_path)
+            if payload_dec_path is None:
+                return None
+        else:
+            payload_dec_path = same_apk[0].get_payload_dec_path()
+        self.__hooks.append(hook.Hook(t, location, class_name, method_name, payload_apk_path, payload_dec_path))
 
     def repack(self, output=None):
         if not self.is_original_apk_loaded():
@@ -62,4 +70,9 @@ class PackadroidSession():
         if self.__original_apk_dec_path != None:
             print("Removing the decompiled original apk!")
             shutil.rmtree(self.__original_apk_dec_path)
+
+        dec_apks = set([h.get_payload_dec_path() for h in self.__hooks])
+        for dec_apk_path in dec_apks:
+            print("Removing directory {} containing decompiled payload!")
+            shutil.rmtree(dec_apk_path)
 
