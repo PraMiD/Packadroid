@@ -40,6 +40,15 @@ class PackadroidPrompt(Cmd):
         print("If you really want to discard all changes and exit, add -f to the exit command!")
         return ERR
 
+    def load_activities(self, args):
+        """ Usage: load_activities <manifest_path.xml> -- Load all activities from an Android manifest. """
+        args = args.split(" ")
+        if len(args) != 1:
+            print("You have to provide a valid path to an .xml Android Manifest file!")
+            return ERR
+        self.__packadroid_session.load_activities(args[0]))
+        return SUC
+
     def do_repack(self, args):
         """ Usage: repack [repacked_apk_path] -- Repack the .apk file as configured! """
         args = args.split(" ")
