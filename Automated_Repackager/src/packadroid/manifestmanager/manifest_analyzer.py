@@ -46,7 +46,7 @@ def find_all_activities(manifest_path):
 
 
 
-def find_launcher_activity(manifest_path):
+def find_launcher_activities(manifest_path):
     """
         Finds the launcher activity (or multiple) from xml.etree.ElementTree.
         Given: Manifest Path
@@ -89,6 +89,7 @@ def get_permissions(manifest_path):
 
     return list(set(permissions))
 
+<<<<<<< HEAD:Automated_Repackager/pythonFiles/apkhandling/manifest_analyzer.py
 
 def fix_manifest(payload_manifest_path, original_manifest_path,
                  output_manifest_path):
@@ -127,3 +128,5 @@ def fix_manifest(payload_manifest_path, original_manifest_path,
 if __name__ == "__main__":
     x = find_launcher_activity('../AndroidManifest.xml')
     print(x)
+=======
+>>>>>>> fa39a678ec10e2e6fc068b638703e4c483428776:Automated_Repackager/src/packadroid/manifestmanager/manifest_analyzer.py

