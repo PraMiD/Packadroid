@@ -56,7 +56,6 @@ def __inject_payload(original_apk, hooks):
         :param hooks: The hooks we inserted beforehand. Those contain the paths to the smali files we need to copy.
         :type hooks: :type hooks: [:class:'hookmanager.Hook']
     """
-
     original = os.path.join(original_apk, "smali")
     payload_paths = set([h.get_payload_dec_path() for h in hooks])
     for path in payload_paths:
