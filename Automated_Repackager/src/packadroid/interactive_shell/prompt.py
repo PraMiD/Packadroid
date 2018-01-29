@@ -98,12 +98,28 @@ class PackadroidPrompt(Cmd):
 
 
     def do_add_broadcast_hook(self, args):
-        """ Usage: add_activity_hook <broadcast> <payload_apk_path> <class> <method> -- Add a new hook to the given intent as a broadcastreceiver. """
+        """ Usage: add_broadcast_hook <broadcast> <payload_apk_path> <class> <method> -- Add a new hook to the given intent as a broadcastreceiver. """
         args = args.split(" ")
         if len(args) < 4:
             print("Unknown format!")
             return ERR
         self.__packadroid_session.add_hook("broadcast", args[0], args[2], args[3], args[1])
+    
+    def do_list_added_hooks(self, args):
+        """ Usage: list_added_hooks   -- Lists all hooks which have already been added by the user. Each hook has an ID which can be used to remove hooks. """
+        self.__packadroid_session.list_hooks()
+    
+    def do_remove_hook(self, args):
+        """ Usage: remove_hook <index>  -- Remove hook with given index. For retrieving the index of each hook use the list_added_hooks function,. """
+        if len(args) != 1:
+            print("Unknown format!")
+            return ERR
+        try:
+            int(args[0])
+        except:
+            print("Input is not an index!")
+            return ERR
+        self.__packadroid_session.remove_hook(int(args[0]))
 
     def do_generate_meterpreter(self, args):
         """ Usage: generate_meterpreter <IP> <lport> -- Generate a reverse shell (meterpreter) with given IP and port. Metasploit necessary! """

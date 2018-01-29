@@ -15,7 +15,7 @@ def decompile_apk(apkPath):
     if not os.path.isfile(apkPath):
         return None
     outDir = os.path.splitext(apkPath)[0] +  "_decompiled"
-    decompiler = sp.Popen("apktool d -o {} {}".format(outDir, apkPath).split(" "))
+    decompiler = sp.Popen("apktool d -f -o {} {}".format(outDir, apkPath).split(" "))
     decompiler.communicate()
     if decompiler.returncode != 0:
         print("Error during decompilation. Return code of apktool: {}".format(decompiler.returncode))

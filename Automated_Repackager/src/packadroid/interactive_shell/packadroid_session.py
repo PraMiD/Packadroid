@@ -18,6 +18,18 @@ class PackadroidSession():
     def get_hooks(self):
         return self.__hooks
 
+    def list_hooks(self):
+        print("[*] Currently added Hooks:")
+        for i in range(len(self.__hooks)):
+            print("Hook " + str(i) + ": " + self.__hooks[i].print_hook())
+    
+    def remove_hook(self, index):
+        if index >= len(self.__hooks):
+            print("[!] Index too big, not removing any hook")
+            return
+        print("[*] Remove hook: " + self.__hooks[index].print_hook())
+        del self.__hooks[index]
+
     def is_original_apk_loaded(self):
         return self.__original_apk_path != None
 
