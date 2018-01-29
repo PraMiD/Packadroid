@@ -4,12 +4,14 @@ import os
 from packadroid.apkhandling import packer
 from packadroid.hookmanager import activity_hook
 from packadroid.hookmanager import broadcast_hook, hook
+from packadroid.manifestmanager import manifest_analyzer
 
 class PackadroidSession():
     def __init__(self):
         self.__original_apk_path = None
         self.__original_apk_dec_path = None
         self.__hooks = []
+        self.__activities = []
 
     def get_hooks(self):
         return self.__hooks
@@ -41,6 +43,11 @@ class PackadroidSession():
         else:
             payload_dec_path = same_apk[0].get_payload_dec_path()
         self.__hooks.append(hook.Hook(t, location, class_name, method_name, payload_apk_path, payload_dec_path))
+
+
+    def load_activities(self, manifest_path):
+        activities = manifest_analyzer.find_all_activities(manifest_path)
+        self.__activities.append(activities)
 
     def repack(self, output=None):
         if not self.is_original_apk_loaded():
