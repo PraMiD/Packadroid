@@ -52,7 +52,7 @@ def get_permissions(manifest_path):
     return list(set(permissions))
 
 
-def add_permissions_to_manifest(original_manifest_path, output_manifest_path=None, novel_permissions):
+def add_permissions_to_manifest(original_manifest_path, novel_permissions, output_manifest_path=None):
     """
         Add additional permissions to the manifest.
         This method ensures that no permissions are duplicated within the resulting manifest.
@@ -140,4 +140,4 @@ def fix_manifest(payload_manifest_path, original_manifest_path,
     """
     payload_permissions = manifest_analyzer.get_permissions(payload_manifest_path)
 
-    add_permissions_to_manifest(original_manifest_path, output_manifest_path, payload_permissions)
+    add_permissions_to_manifest(original_manifest_path, payload_permissions, output_manifest_path)
