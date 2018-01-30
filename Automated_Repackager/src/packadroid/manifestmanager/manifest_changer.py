@@ -1,8 +1,15 @@
 import xml.etree.ElementTree as ET
-from packadroid.manifestmanager import *
+from packadroid.manifestmanager import manifest_analyzer
 
 def get_activity_name(activity):
-    """returns name of xml encoded activity. (name may be dirty with android tags)"""
+    """
+    Extract the name of an activity out of the name with additional android XML tags.
+
+    :param activity: 'Dirty' name.
+    :type activity: str
+
+    :return: The name of the activity.
+    """
     for key in activity.attrib.keys():
         if key.endswith("name"):
             return activity.attrib[key]
@@ -10,9 +17,12 @@ def get_activity_name(activity):
 
 def find_launcher_activities(manifest_path):
     """
-        Finds the launcher activity (or multiple) from xml.etree.ElementTree.
-        Given: Manifest Path
-        :return: List of launchar activities that allow hooking
+    Finds the launcher activity (or multiple) from xml.etree.ElementTree.
+
+    :param manifest_path: Path to the decompiled manifest file.
+    :type manifest_path: str
+
+    :return: List of launcher activities.
     """
     tree = ET.parse(manifest_path)
     root = tree.getroot()
@@ -42,6 +52,14 @@ def find_launcher_activities(manifest_path):
 
 
 def get_permissions(manifest_path):
+    """
+    Extract the permissions of an application out of it manifest file.
+
+    :param manifest_path: Path to the decompiled manifest file of the application.
+    :type manifest_path: str
+
+    :return: [str] of the permissions of the application.
+    """
     tree = ET.parse(manifest_path)
     root = tree.getroot()
 
@@ -118,6 +136,7 @@ def export_data(data, out_path):
     """
         Exports a list of data items to a given output path.
         Each item is stored in a seperate line.
+
         :param data: List of data items
         :param out_path: Path to store the data
     """
@@ -133,10 +152,8 @@ def export_data(data, out_path):
 def fix_manifest(payload_manifest_path, original_manifest_path,
                  output_manifest_path):
     """
-        Fix manifest located at the provided manifest path.
-        TODO: provide list of additional permissions to be added
-        :param manifest_path:
-        :return:
+    Fix manifest located at the provided manifest path.
+    TODO: provide list of additional permissions to be added
     """
     payload_permissions = manifest_analyzer.get_permissions(payload_manifest_path)
 
