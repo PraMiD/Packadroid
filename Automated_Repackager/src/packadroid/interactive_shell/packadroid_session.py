@@ -48,7 +48,7 @@ class PackadroidSession():
         return self.__original_apk_dec_path
 
     def add_hook(self, t, location, class_name, method_name, payload_apk_path):
-        same_apk = [h for h in self.__hooks if h.get_payload_apk_path == payload_apk_path]
+        same_apk = [h for h in self.__hooks if h.get_payload_apk_path() == payload_apk_path]
         if (len(same_apk)) < 1:
             # We have not decompiled this apk before
             payload_dec_path = packer.decompile_apk(payload_apk_path)
@@ -97,10 +97,10 @@ class PackadroidSession():
         broadcast_hooks = [h for h in self.get_hooks() if h.get_type() == "broadcast_receiver"]
 
         print("Inserting activity hooks.")
-        activity_hook.inject_activity_hooks(self.__original_apk_dec_path, activity_hooks)
+        activity_hook.inject_activity_hooks(activity_hooks, self.__original_apk_dec_path)
 
         print("Inserting broadcast receiver hooks.")
-        broadcast_hook.inject_broadcast_receiver_hooks(self.__original_apk_dec_path, broadcast_hooks)
+        broadcast_hook.inject_broadcast_receiver_hooks(broadcast_hooks, self.__original_apk_dec_path)
 
         if output == None:
             output = os.path.splitext(self.__original_apk_path)[0] +  "_repacked.apk"

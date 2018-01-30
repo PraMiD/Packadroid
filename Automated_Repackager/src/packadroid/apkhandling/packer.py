@@ -15,7 +15,7 @@ def decompile_apk(apkPath):
     if not os.path.isfile(apkPath):
         return None
     outDir = os.path.splitext(apkPath)[0] +  "_decompiled"
-    decompiler = sp.Popen("apktool d -f -o {} {}".format(outDir, apkPath).split(" "))
+    decompiler = sp.Popen("apktool d  -o {} {}".format(outDir, apkPath).split(" "))
     decompiler.communicate()
     if decompiler.returncode != 0:
         print("Error during decompilation. Return code of apktool: {}".format(decompiler.returncode))
@@ -39,7 +39,7 @@ def repack_apk(decompiled_path, hooks, output):
     :return The path to the repacked .apk file.
             None is returned on any errors.
     """
-    print(decompile_apk)
+    #print(decompile_apk)
     if not os.path.isdir(decompiled_path):
         return None
 
@@ -62,4 +62,5 @@ def __inject_payload(original_apk, hooks):
         payload = os.path.join(path, "smali")
         for subf in os.listdir(payload):
             if subf is not "android":
+                print "COPY: " + "cp -r {} {}".format(os.path.join(payload, subf), original_apk)
                 os.system("cp -r {} {}".format(os.path.join(payload, subf), original_apk))
