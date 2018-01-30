@@ -48,26 +48,36 @@ def repack_apk(decompiled_path, hooks, output):
     __inject_payload(decompiled_path, hooks)
     os.system("apktool b -o {} {}".format(output, decompiled_path))
 
-def __inject_payload(original_apk, hooks):
+def __inject_payload(original_apk_dec_path, hooks):
     """
         Copy the smali sources of the payload to the original application before building.
 
-        :param original_apk: Path to the decompiled original apk.
-        :type original_apk: str
+        :param original_apk_dec_path: Path to the decompiled original apk.
+        :type original_apk_dec_path: str
 
         :param hooks: The hooks we inserted beforehand. Those contain the paths to the smali files we need to copy.
         :type hooks: :type hooks: [:class:'hookmanager.Hook']
     """
-    original = os.path.join(original_apk, "smali")
+    original = os.path.join(original_apk_dec_path, "smali")
     payload_paths = set([h.get_payload_dec_path() for h in hooks])
     for path in payload_paths:
         payload = os.path.join(path, "smali")
         for subf in os.listdir(payload):
             if subf is not "android":
-                os.system("cp -r {} {}".format(os.path.join(payload, subf), original_apk))
+                os.system("cp -r {} {}".format(os.path.join(payload, subf), original_apk_dec_path))
 
-def __add_necessary_permissions(original_apk, hooks):
-    original_apk_manifest_path = os.path.join(original_apk, "AndroidManifest.xml")
+def __add_necessary_permissions(original_apk_dec_path, hooks):
+    """
+    This functions adds additional permissions to the original application if they
+    are required for the payload.
+
+    :param original_apk_dec_path: Path to the decompiled original application.
+    :type original_apk_dec_path: str
+
+    :param hooks: The hooks we inserted into the original apk.
+    :type hooks: [:class:'packadroid.hookmanager.hook.Hook']
+    """
+    original_apk_manifest_path = os.path.join(original_apk_dec_path, "AndroidManifest.xml")
     original_permissions = manifest_analyzer.get_permissions(original_apk_manifest_path)
 
     payload_permissions = []
