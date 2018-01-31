@@ -1,6 +1,8 @@
 import os
 import shutil
 import subprocess as sp
+import subprocess
+
 
 from packadroid.manifestmanager import manifest_analyzer, manifest_changer
 
@@ -25,6 +27,13 @@ def decompile_apk(apkPath):
         return None
     return outDir
 
+def __run_jarsigner(command):
+    """ executes the jarsigner with specific options 
+        given in the 'command' argument"""
+    full_command = "jarsigner " + command
+    proc = subprocess.Popen(full_command, stdout=subprocess.PIPE, shell=True)
+    (out, err) = proc.communicate()
+
 def repack_apk(decompiled_path, hooks, output):
     """
     Build/Repack the decompiled application given as parameter.
@@ -48,6 +57,10 @@ def repack_apk(decompiled_path, hooks, output):
     __inject_payload(decompiled_path, hooks)
     os.system("apktool b -o {} {}".format(output, decompiled_path))
 
+    __run_jarsigner(
+        "-verbose -keystore ~/.android/debug.keystore -storepass android -keypass android -digestalg SHA1 -sigalg "
+        "MD5withRSA " + output + " androiddebugkey")
+
 def __inject_payload(original_apk_dec_path, hooks):
     """
         Copy the smali sources of the payload to the original application before building.
@@ -64,7 +77,7 @@ def __inject_payload(original_apk_dec_path, hooks):
         payload = os.path.join(path, "smali")
         for subf in os.listdir(payload):
             if subf is not "android":
-                os.system("cp -r {} {}".format(os.path.join(payload, subf), original_apk_dec_path))
+                os.system("cp -r {} {}".format(os.path.join(payload, subf), original))
 
 def __add_necessary_permissions(original_apk_dec_path, hooks):
     """

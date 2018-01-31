@@ -13,7 +13,6 @@ class PackadroidSession():
         self.__original_apk_path = None
         self.__original_apk_dec_path = None
         self.__hooks = []
-        self.__activities = []
 
     def get_hooks(self):
         return self.__hooks
@@ -58,9 +57,11 @@ class PackadroidSession():
             payload_dec_path = same_apk[0].get_payload_dec_path()
         self.__hooks.append(hook.Hook(t, location, class_name, method_name, payload_apk_path, payload_dec_path))
 
-    def load_activities(self, manifest_path):
-        activities = manifest_analyzer.find_all_activities(manifest_path)
-        self.__activities.append(activities)
+    def list_activities(self):
+        if not self.is_original_apk_loaded():
+            return None
+        manifest_path = os.path.join(self.__original_apk_dec_path, "AndroidManifest.xml")
+        return manifest_analyzer.find_all_activities(manifest_path)
 
     def generate_meterpreter(self, ip, lport):
         """ executes meterpreter with the options given"""

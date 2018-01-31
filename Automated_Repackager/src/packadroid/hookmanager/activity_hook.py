@@ -54,15 +54,14 @@ def __inject_hook_call(original_apk, activity, hooks):
     print("Hooking activity: {}".format(activity))
     hook_location = ';->onCreate(Landroid/os/Bundle;)V'
     with open(smali_path) as f:
-        line = f.readline()
-
-        activity_smali.append(line)
-        if hook_location in line:
-            for hook in hooks:
-                c = hook.get_class().replace(".", "/")
-                m = hook.get_method()
-                call = "\n\tinvoke-static {p0}, L{};->{}(Landroid/content/Context;)V".format(c, m)
-                activity_smali.append(call)
+        for line in f:
+            activity_smali.append(line)
+            if hook_location in line:
+                for hook in hooks:
+                    c = hook.get_class().replace(".", "/")
+                    m = hook.get_method()
+                    call = "\n\tinvoke-static {p0}, L" + c + ";->" + m + "(Landroid/content/Context;)V"
+                    activity_smali.append(call)
 
     print("Writing back activity: {}".format(activity))
     with open(smali_path, "w") as f:

@@ -41,7 +41,7 @@ def find_all_activities(manifest_path):
                             and category.attrib['{http://schemas.android.com/apk/res/android}name'] == "android.intent.category.LAUNCHER"):
                             is_launcher_activity = True
 
-        result.append( (activity, is_launcher_activity) )
+        result.append( (get_activity_name(activity), is_launcher_activity) )
     return result
 
 

