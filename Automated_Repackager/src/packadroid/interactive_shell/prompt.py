@@ -24,7 +24,7 @@ class PackadroidPrompt(Cmd):
     def do_help(self, args):
         """ Usage: help - shows available methods without problems"""
         x = inspect.getmembers(PackadroidPrompt)
-        print "Available methods"
+        print("Available methods")
         for tuple in x:
             if tuple[0].startswith("do_"):
                 line = tuple[0][3:].ljust(30)
@@ -33,7 +33,6 @@ class PackadroidPrompt(Cmd):
                 else:
                     line += str(tuple[1].__doc__)
                 print(line)
-        #print x
 
     def do_load_original(self, args):
         """ Usage: load_original <path_to_original_apk> -- Load an .apk file you want inject code to. """
