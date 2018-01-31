@@ -159,6 +159,9 @@ class PackadroidPrompt(Cmd):
         :type cmds: [str]
         """
         for cmd in cmds:
+            if cmd.startswith("#") or cmd == "":
+                # used as comment
+                continue
             print("[*] " + cmd)               
             if self.onecmd(cmd): # Stop -> An error happened in one of the commands!
                 self.__exit(1)
