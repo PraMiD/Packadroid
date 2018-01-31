@@ -159,9 +159,10 @@ class PackadroidPrompt(Cmd):
         :type cmds: [str]
         """
         for cmd in cmds:
-            print(cmd)
+            print("[*] " + cmd)               
             if self.onecmd(cmd): # Stop -> An error happened in one of the commands!
                 self.__exit(1)
+
 
     def __setup_session(self):
         self.__packadroid_session = PackadroidSession()

