@@ -82,7 +82,7 @@ class PackadroidPrompt(Cmd):
             return ERR
         else:
             print("Successful")
-            self.__packadroid_session.cleanup()
+            #self.__packadroid_session.cleanup()
             self.__setup_session() # Clean old state
 
         return SUC
@@ -103,7 +103,8 @@ class PackadroidPrompt(Cmd):
         if len(args) < 4:
             print("Unknown format!")
             return ERR
-        self.__packadroid_session.add_hook("broadcast", args[0], args[2], args[3], args[1])
+        print("[*] Add new broadcast hook")
+        self.__packadroid_session.add_hook("broadcast_receiver", args[0], args[2], args[3], args[1])
     
     def do_list_added_hooks(self, args):
         """ Usage: list_added_hooks   -- Lists all hooks which have already been added by the user. Each hook has an ID which can be used to remove hooks. """
@@ -159,6 +160,7 @@ class PackadroidPrompt(Cmd):
         :type cmds: [str]
         """
         for cmd in cmds:
+            print(cmd)
             if self.onecmd(cmd): # Stop -> An error happened in one of the commands!
                 self.__exit(1)
 

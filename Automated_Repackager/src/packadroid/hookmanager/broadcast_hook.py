@@ -1,10 +1,11 @@
 from packadroid.manifestmanager import manifest_changer
 from packadroid.hookmanager.hook import Hook
-
+from collections import defaultdict
+import xml.etree.ElementTree as ET
 
 
 #gloab variables
-
+receiver_count = 0
 path = ""
 #on_power_connected
 opc = False
@@ -20,47 +21,54 @@ oic = False
 ooc = False
 
 
-def __fix_manifest(manifest_path, package):
+def __fix_manifest(manifest_path, package, actions):
     """
     Fixes the AndroidManifest.xml dependent on the specified hooks. Adds neede permissions. Adds needed receiver.
 
-    :return
-    pass
+    :return 
+    Name of the used class which catches the broadcast.
     """
-    global obc,opdc,opc, ors, oic, ooc
+    global receiver_count
+    broadcast_class = "BroadcastLauncher" + str(receiver_count)
+    receiver_count += 1
+
+    print(broadcast_class)
+    print(package)
+    print(actions)
 
     # inject receiver:
-    rec = ('        <receiver android:name="' + package.replace("/",".") + '.BroadcastLauncher">\n            <intent-filter>\n').replace("..", ".")
+    rec = ('        <receiver android:name="' + package.replace("/",".") + '.' + broadcast_class +'">\n            <intent-filter>\n').replace("..", ".")
     
     permissions = []
-    if opc:
-        rec += '                <action android:name="android.intent.action.ACTION_POWER_CONNECTED"/>\n'
-    if opdc:
-        rec += '                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED"/>\n'
-    if obc:
-        rec += '                <action android:name="android.intent.action.BOOT_COMPLETED"/>\n'
-        permissions.append("android.permission.RECEIVE_BOOT_COMPLETED")
-    if ors:
-        rec += '                <action android:name="android.provider.Telephony.SMS_RECEIVED"/>\n'
-        permissions.append("android.permission.RECEIVE_SMS")
-    if oic:
-        rec += '                <action android:name="android.intent.action.PHONE_STATE"/>\n'
-        permissions.append("android.permission.READ_PHONE_STATE")
-    if ooc:
-        rec += '                <action android:name="android.intent.action.NEW_OUTGOING_CALL"/>\n'
-        permissions.append("android.permission.PROCESS_OUTGOING_CALLS")
+    for a in actions:
+        if a == "on_power_connected":
+            rec += '                <action android:name="android.intent.action.ACTION_POWER_CONNECTED"/>\n'
+        if a == "on_power_disconnected" :
+            rec += '                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED"/>\n'
+        if a == "on_boot_completed":
+            rec += '                <action android:name="android.intent.action.BOOT_COMPLETED"/>\n'
+            permissions.append("android.permission.RECEIVE_BOOT_COMPLETED")
+        if a == "on_receive_sms":
+            rec += '                <action android:name="android.provider.Telephony.SMS_RECEIVED"/>\n'
+            permissions.append("android.permission.RECEIVE_SMS")
+        if  a == "on_incoming_call":
+            rec += '                <action android:name="android.intent.action.PHONE_STATE"/>\n'
+            permissions.append("android.permission.READ_PHONE_STATE")
+        if a == "on_outgoing_call":
+            rec += '                <action android:name="android.intent.action.NEW_OUTGOING_CALL"/>\n'
+            permissions.append("android.permission.PROCESS_OUTGOING_CALLS")
 
     rec += '            </intent-filter>\n        </receiver>'
 
     print(rec)
-    #manifest_changer.add_receiver(manifest_path, rec)
+    manifest_changer.add_receiver(manifest_path, rec)
     # add permissions
-    #manifest_changer.add_permissions_to_manifest(manifest_path, manifest_path, permissions)
+    manifest_changer.add_permissions_to_manifest(manifest_path, manifest_path, permissions)
 
-    return
+    return broadcast_class
 
 
-def __inject_smali(package, classname, methodname):
+def __inject_smali(payload_apk_path, filename, package, classname, methodname):
     """
     Generates the smali code for the broadcast receiver based on given package, classname and methodname
     
@@ -78,9 +86,9 @@ def __inject_smali(package, classname, methodname):
     """
 
     global path
-    smali = (".class public L" +package + "/BroadcastLauncher;\n").replace("//", "/")
+    smali = (".class public L" + package.replace(".","/") + "/" + filename + ";\n").replace("//", "/")
+    # remove from line 2: .source "BroadcastLauncher.java"
     smali += """.super Landroid/content/BroadcastReceiver;
-.source "BroadcastLauncher.java"
 
 
 # direct methods
@@ -112,11 +120,19 @@ def __inject_smali(package, classname, methodname):
 
     print(smali)
     
-    #with open(path+"BroadcastLauncher.smali","w") as f:
-    #    f.write(smali)
+    # need to put the classes to the payload. packer copies it then to the original apk in the repack process
+    with open(payload_apk_path + "/smali/" + package.replace(".","/") + "/" + filename + ".smali","w") as f:
+        f.write(smali)
+
+def __generate_hook(item, original_manifest_path, payload_manifest_path):
+    tree = ET.parse(payload_manifest_path)
+    root = tree.getroot()
+    payload_package = root.attrib['package']
+    filename = __fix_manifest(original_manifest_path, payload_package, item[1])
+    __inject_smali(item[0][3], filename, payload_package, item[0][0], item[0][1])
 
 
-def inject_broadcast_receiver_hooks(original_apk_path, hooks):
+def inject_broadcast_receiver_hooks(hooks, original_apk_path):
     """
     Injects different hooks into the original application. These hooks are launched on the intents given in the parameters. The broadcast hooks are generated based on a given list of object hooks
     
@@ -127,35 +143,38 @@ def inject_broadcast_receiver_hooks(original_apk_path, hooks):
     """
     global path, obc, opdc, opc, ors, oic, ooc
 
-    raise Exception("Use original_apk_path to find Manifest")
 
+    hook_overview = defaultdict(list)
     for h in hooks:
         if h.get_type() != "broadcast_receiver":
             print("Broadcast hook got hook object which is no broadcast_receiver")
             continue
-        print(h)
-        hook_type = h.get_location()
-        if hook_type == "on_power_connected":
-            opc = True
-        elif hook_type == "on_power_disconnected":
-            opdc = True
-        elif hook_type == "on_boot_completed":
-            obc = True
-        elif hook_type == "on_receive_sms":
-            ors = True
-        elif hook_type == "on_incoming_call":
-            oic = True
-        elif hook_type == "on_outgoing_call":
-            ooc = True
+        #print(h)
+        key = (h.get_class(), h.get_method(), h.get_payload_apk_path(), h.get_payload_dec_path())
+        hook_overview[key].append(h.get_location())
 
-    # package, class and method are equal for each broadcast hook
-    # extract package name from payload path
-    # package name always begins after subfolder smali
-    package =  hooks[0].get_payload_dec_path().split("smali/")[-1]
-    classname = hooks[0].get_class()
-    methodname = hooks[0].get_method()
-    #TODO
-    manifest_path = hooks[0].get_payload_dec_path().split("smali/")[0] + "AndroidManifest.xml"
+#        hook_type = h.get_location()
+#        if hook_type == "on_power_connected":
+#            opc = True
+#        elif hook_type == "on_power_disconnected":
+#            opdc = True
+#        elif hook_type == "on_boot_completed":
+#            obc = True
+#        elif hook_type == "on_receive_sms":
+#            ors = True
+#        elif hook_type == "on_incoming_call":
+#            oic = True
+#        elif hook_type == "on_outgoing_call":
+#            ooc = True
+    original_manifest_path = (original_apk_path + "/" + "AndroidManifest.xml").replace("//", "/")
+    print(hook_overview.items())
+    for h in hook_overview.items():
+        payload_manifest_path = (h[0][3] + "/" + "AndroidManifest.xml").replace("//", "/")
+
+        __generate_hook(h, original_manifest_path, payload_manifest_path)
+
+    #raise Exception("Use original_apk_path to find Manifest")
+    #raise Exception("Find payload package from payload apk manifest")
 
     #__inject_smali(package, classname, methodname)
     #__fix_manifest(manifest_path, package)
