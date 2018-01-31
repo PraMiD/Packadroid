@@ -81,7 +81,7 @@ class PackadroidPrompt(Cmd):
             return ERR
         else:
             print("Successful")
-            #self.__packadroid_session.cleanup()
+            self.__packadroid_session.cleanup()
             self.__setup_session() # Clean old state
 
         return SUC

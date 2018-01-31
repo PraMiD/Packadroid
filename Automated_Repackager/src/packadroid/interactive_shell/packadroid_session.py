@@ -107,18 +107,14 @@ class PackadroidSession():
             output = os.path.splitext(self.__original_apk_path)[0] +  "_repacked.apk"
         print("[*] Repack apk as {}".format(output))
         packer.repack_apk(self.__original_apk_dec_path, self.__hooks, output)
-
         return output
 
     def cleanup(self):
-        print("Cleanup")
-        print(self.__original_apk_dec_path)
         if self.__original_apk_dec_path != None:
             print("[*] Removing the decompiled original apk!")
             shutil.rmtree(self.__original_apk_dec_path)
 
         dec_apks = set([h.get_payload_dec_path() for h in self.__hooks])
-        print(dec_apks)
         for dec_apk_path in dec_apks:
             print("[*] Removing directory {} containing decompiled payload!")
             shutil.rmtree(dec_apk_path)
