@@ -1,7 +1,7 @@
 import errno
 import os
 
-def inject_activity_hooks(hooks, original_apk):
+def inject_activity_hooks(original_apk, hooks):
     """
         Create the hooked smali.
 
@@ -11,7 +11,6 @@ def inject_activity_hooks(hooks, original_apk):
         :param original_apk: Path to the decompiled original apk
         :type original_apk: str
     """
-
     print("Hooking the desired activities.")
 
     if not os.path.isdir(original_apk):
@@ -46,7 +45,7 @@ def __inject_hook_call(original_apk, activity, hooks):
         :type hooks: [:class:'hookmanager.Hook']
     """
     activity_smali = []
-    smali_path = os.path.join(original_apk, "smali", activity.replace(".", "/"))
+    smali_path = os.path.join(original_apk, "smali", activity.replace(".", "/") + ".smali")
 
     if not os.path.isfile(smali_path):
         print("Cannot load smali file for activity {} at path {}!".format(activity, smali_path))
