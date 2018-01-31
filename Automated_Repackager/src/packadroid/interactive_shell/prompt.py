@@ -39,7 +39,6 @@ class PackadroidPrompt(Cmd):
         args = args.split(" ")
         if len(args) != 1:
             print("You have to provide the path to an valid .apk file!")
-            print(len(args))
             return ERR
         if self.__packadroid_session.load_original_apk(args[0]) is None:
             return ERR
