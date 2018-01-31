@@ -68,7 +68,7 @@ class PackadroidPrompt(Cmd):
     def do_repack(self, args):
         """ Usage: repack [repacked_apk_path] -- Repack the .apk file as configured! """
         args = args.split(" ")
-        if len(args) != 0:
+        if len(args) != 0 and args[0] != "":
             if args[0] != "":
                 ret = self.__packadroid_session.repack(args[0])
             else:

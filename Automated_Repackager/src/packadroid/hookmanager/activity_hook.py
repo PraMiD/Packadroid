@@ -1,7 +1,7 @@
 import errno
 import os
 
-def inject_activity_hooks(original_apk, hooks):
+def inject_activity_hooks(hooks, original_apk):
     """
         Create the hooked smali.
 
