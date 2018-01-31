@@ -55,13 +55,14 @@ class PackadroidPrompt(Cmd):
         return ERR
 
     def do_list_activities(self, args):
-        """ Usage: list_activities -- List the activities of the loaded original application. [*] marks launcher activities. """
+        """ Usage: list_activities -- List the activities of the loaded original application. [*] marks launcher activities. The number before each activity is its ID. This ID can be used in the add_activity_hook command."""
         if not self.__packadroid_session.is_original_apk_loaded():
             print("No original application loaded!")
             return ERR
-
+        i = 0
         for act, is_launcher in self.__packadroid_session.list_activities():
-            print("\t- " + act + (" [*]" if is_launcher else ""))
+            print(str(i).ljust(4) + ":\t" + act + (" [*]" if is_launcher else ""))
+            i += 1
         return SUC
 
     def do_repack(self, args):
@@ -87,7 +88,7 @@ class PackadroidPrompt(Cmd):
         return SUC
 
     def do_add_activity_hook(self, args):
-        """ Usage: add_activity_hook <activity> <payload_apk_path> <class> <method> -- Add a new hook to the given activity for the given payload. """
+        """ Usage: add_activity_hook <activity name OR activity ID> <payload_apk_path> <class> <method> -- Add a new hook to the given activity for the given payload. The activity IDs can be listed with list_activities."""
         args = args.split(" ")
         if len(args) < 4:
             print("Unknown format!")
