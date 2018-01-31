@@ -1,16 +1,15 @@
 import os
 import shutil
 import subprocess as sp
-import subprocess
-
 
 from packadroid.manifestmanager import manifest_analyzer, manifest_changer
 
-def decompile_apk(apkPath):
+def decompile_apk(apkPath, verbose):
     """
     Decompile the .apk file given as parameter.
 
     :param apkPath: Path to the original apk file.
+    :param verbose: specify whether to output enriched terminal output.
     :type apkPath: str
 
     :return The path to the directory containing the decompiled application.
@@ -25,14 +24,15 @@ def decompile_apk(apkPath):
     except:
         #good to go
         pass
-    decompiler = sp.Popen("apktool d  -o {} {}".format(outDir, apkPath).split(" "), stdout=subprocess.PIPE)
+    decompiler = sp.Popen("apktool d  -o {} {}".format(outDir, apkPath).split(" "), stdout=sp.PIPE)
     out,err = decompiler.communicate()
-    print(out)
+    if verbose:
+        print(out.decode('ascii'))
     if decompiler.returncode != 0:
         print("[-] Error during decompilation. Return code of apktool: {}".format(decompiler.returncode))
         shutil.rmtree(outDir)
         return None
-    if "Error" in out:
+    if "Error" in str(out):
         print("[-] Error during decompilation.")
         shutil.rmtree(outDir)
         return None
@@ -42,10 +42,10 @@ def __run_jarsigner(command):
     """ executes the jarsigner with specific options 
         given in the 'command' argument"""
     full_command = "jarsigner " + command
-    proc = subprocess.Popen(full_command, stdout=subprocess.PIPE, shell=True)
+    proc = sp.Popen(full_command, stdout=sp.PIPE, shell=True)
     (out, err) = proc.communicate()
 
-def repack_apk(decompiled_path, hooks, output):
+def repack_apk(decompiled_path, hooks, output, verbose):
     """
     Build/Repack the decompiled application given as parameter.
 
@@ -58,15 +58,22 @@ def repack_apk(decompiled_path, hooks, output):
     :param output: The path where we should write the output to.
     :type output: str
 
+    :param verbose: Specify whether to enable enriched terminal output.
+    :type verbose: bool
+
     :return The path to the repacked .apk file.
             None is returned on any errors.
     """
-    #print(decompile_apk)
     if not os.path.isdir(decompiled_path):
         return None
 
     __inject_payload(decompiled_path, hooks)
-    os.system("apktool b -o {} {}".format(output, decompiled_path))
+
+    decompiler = sp.Popen("apktool b -o {} {}".format(output, decompiled_path).split(" "), stdout=sp.PIPE)
+    out,err = decompiler.communicate()
+    if verbose:
+        print(out.decode('ascii'))
+    os.system()
 
     __run_jarsigner(
         "-verbose -keystore ~/.android/debug.keystore -storepass android -keypass android -digestalg SHA1 -sigalg "

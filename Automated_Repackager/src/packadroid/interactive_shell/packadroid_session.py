@@ -13,6 +13,7 @@ class PackadroidSession():
         self.__original_apk_path = None
         self.__original_apk_dec_path = None
         self.__hooks = []
+        self.__verbose = True
 
     def get_hooks(self):
         return self.__hooks
@@ -37,7 +38,7 @@ class PackadroidSession():
             print("[-] No .apk file found at the given path!")
             return None
 
-        self.__original_apk_dec_path = packer.decompile_apk(apk_path)
+        self.__original_apk_dec_path = packer.decompile_apk(apk_path, self.__verbose)
         if self.__original_apk_dec_path is None:
             print("[-] Could not decompile the original .apk file!")
             return None
@@ -50,7 +51,7 @@ class PackadroidSession():
         same_apk = [h for h in self.__hooks if h.get_payload_apk_path() == payload_apk_path]
         if (len(same_apk)) < 1:
             # We have not decompiled this apk before
-            payload_dec_path = packer.decompile_apk(payload_apk_path)
+            payload_dec_path = packer.decompile_apk(payload_apk_path, self.__verbose)
             if payload_dec_path is None:
                 return None
         else:
@@ -123,3 +124,11 @@ class PackadroidSession():
             print("[*] Removing directory {} containing decompiled payload!")
             shutil.rmtree(dec_apk_path)
 
+
+    def set_verbose(self, value):
+        """ 
+            Changes state of verbose logging. 
+            Value  of 1 indicates that verbose logging should be activated.
+        """
+        self.__verbose = (value == 1)
+        print(self.__verbose)

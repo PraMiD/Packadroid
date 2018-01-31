@@ -34,6 +34,24 @@ class PackadroidPrompt(Cmd):
                     line += str(tuple[1].__doc__)
                 print(line)
 
+    def do_set_verbose(self, args):
+        """ Usage: set_verbose <value>, enables (1) or disables (0) the verbose mode which shows enriched shell output."""
+        args = args.split(" ")
+        print(args)
+        if len(args) == 1:
+            value = int(args[0])
+            print(value)
+            if value == 0 or value == 1:
+                print(value)
+                self.__packadroid_session.set_verbose(value)
+                return SUC
+            else:
+                print("Invalid value provided. Only 1(enabling) or 0(disabling) are available.")
+                return ERR
+        else:
+            print("Invalid number of arguments provided.")
+            return ERR
+
     def do_load_original(self, args):
         """ Usage: load_original <path_to_original_apk> -- Load an .apk file you want inject code to. """
         args = args.split(" ")
