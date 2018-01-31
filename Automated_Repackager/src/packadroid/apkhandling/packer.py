@@ -32,7 +32,7 @@ def decompile_apk(apkPath, verbose):
         print("[-] Error during decompilation. Return code of apktool: {}".format(decompiler.returncode))
         shutil.rmtree(outDir)
         return None
-    if "Error" in str(out):
+    if "Error" in out.decode('ascii'):
         print("[-] Error during decompilation.")
         shutil.rmtree(outDir)
         return None
