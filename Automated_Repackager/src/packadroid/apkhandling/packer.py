@@ -68,12 +68,12 @@ def repack_apk(decompiled_path, hooks, output, verbose):
         return None
 
     __inject_payload(decompiled_path, hooks)
+    __add_necessary_permissions(decompiled_path, hooks)
 
     decompiler = sp.Popen("apktool b -o {} {}".format(output, decompiled_path).split(" "), stdout=sp.PIPE)
     out,err = decompiler.communicate()
     if verbose:
         print(out.decode('ascii'))
-    os.system()
 
     __run_jarsigner(
         "-verbose -keystore ~/.android/debug.keystore -storepass android -keypass android -digestalg SHA1 -sigalg "
@@ -113,7 +113,7 @@ def __add_necessary_permissions(original_apk_dec_path, hooks):
 
     payload_permissions = []
     for hook in hooks:
-        payload_permissions.extend(manifest_analyzer.get_permissions(os.path.join(hook.get_dec_apk_path(), "AndroidManifest.xml")))
+        payload_permissions.extend(manifest_analyzer.get_permissions(os.path.join(hook.get_payload_dec_path(), "AndroidManifest.xml")))
 
     payload_permissions = set(payload_permissions)
     manifest_changer.add_permissions_to_manifest(original_apk_manifest_path, payload_permissions.difference(original_permissions))

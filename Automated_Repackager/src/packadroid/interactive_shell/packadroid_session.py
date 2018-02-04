@@ -123,7 +123,7 @@ class PackadroidSession():
         if output == None:
             output = os.path.splitext(self.__original_apk_path)[0] +  "_repacked.apk"
         print("[*] Repack apk as {}".format(output))
-        packer.repack_apk(self.__original_apk_dec_path, self.__hooks, output)
+        packer.repack_apk(self.__original_apk_dec_path, self.__hooks, output, self.__verbose)
         return output
 
     def cleanup(self):

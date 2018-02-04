@@ -17,9 +17,13 @@ class PackadroidPrompt(Cmd):
 
     def start(self):
         self.cmdloop("Started Packadroid Interactive Shell")
-        while True:
-            # There might be errors while executing a command, but we want to keep the prompt open
-            self.cmdloop("")
+        try:
+            while True:
+                # There might be errors while executing a command, but we want to keep the prompt open
+                self.cmdloop("")
+        except Exception:
+            self.__packadroid_session.cleanup()
+            raise
 
     def do_help(self, args):
         """ Usage: help - shows available methods without problems"""
@@ -185,6 +189,8 @@ class PackadroidPrompt(Cmd):
             if self.onecmd(cmd): # Stop -> An error happened in one of the commands!
                 self.__exit(1)
 
+    def get_session(self):
+        return self.__packadroid_session
 
     def __setup_session(self):
         self.__packadroid_session = PackadroidSession()

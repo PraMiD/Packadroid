@@ -263,7 +263,11 @@ if args['batch'] is not None:
         sys.exit(1)
     with open(batch_file, "r") as f:
         cmds = f.readlines()
-    # Execute the commands given in the batch file first!
-    prompt.execute_commands(cmds)
+    try:
+        # Execute the commands given in the batch file first!
+        prompt.execute_commands(cmds)
+    except Exception:
+            prompt.get_session().cleanup()
+            raise
 prompt.start()
 main()
