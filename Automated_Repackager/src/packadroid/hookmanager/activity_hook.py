@@ -11,11 +11,11 @@ def inject_activity_hooks(hooks, original_apk):
         :param original_apk: Path to the decompiled original apk
         :type original_apk: str
     """
-    print("Hooking the desired activities.")
+    print("[*] Hooking the desired activities.")
 
     if not os.path.isdir(original_apk):
-        print("Cannot find the decompiled original application at {}".format(original_apk))
-        print("No activity hook is inserted!")
+        print("[-] Cannot find the decompiled original application at {}".format(original_apk))
+        print("[-] No activity hook is inserted!")
         return
 
     activities = {}
@@ -51,7 +51,7 @@ def __inject_hook_call(original_apk, activity, hooks):
         print("Cannot load smali file for activity {} at path {}!".format(activity, smali_path))
         return
 
-    print("Hooking activity: {}".format(activity))
+    print("[*] Hooking activity: {}".format(activity))
     hook_location = ';->onCreate(Landroid/os/Bundle;)V'
     with open(smali_path) as f:
         for line in f:
@@ -63,7 +63,7 @@ def __inject_hook_call(original_apk, activity, hooks):
                     call = "\n\tinvoke-static {p0}, L" + c + ";->" + m + "(Landroid/content/Context;)V"
                     activity_smali.append(call)
 
-    print("Writing back activity: {}".format(activity))
+    print("[*] Writing back activity: {}".format(activity))
     with open(smali_path, "w") as f:
         f.write("".join(activity_smali))
 

@@ -41,12 +41,9 @@ class PackadroidPrompt(Cmd):
     def do_set_verbose(self, args):
         """ Usage: set_verbose <value>, enables (1) or disables (0) the verbose mode which shows enriched shell output."""
         args = args.split(" ")
-        print(args)
         if len(args) == 1:
             value = int(args[0])
-            print(value)
             if value == 0 or value == 1:
-                print(value)
                 self.__packadroid_session.set_verbose(value)
                 return SUC
             else:

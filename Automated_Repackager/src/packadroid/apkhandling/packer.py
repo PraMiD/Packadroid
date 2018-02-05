@@ -24,10 +24,12 @@ def decompile_apk(apkPath, verbose):
     except:
         #good to go
         pass
-    decompiler = sp.Popen("apktool d  -o {} {}".format(outDir, apkPath).split(" "), stdout=sp.PIPE)
+    decompiler = sp.Popen("apktool d  -o {} {}".format(outDir, apkPath).split(" "), stdout=sp.PIPE, stderr=sp.PIPE)#stdout=sp.PIPE)
     out,err = decompiler.communicate()
     if verbose:
         print(out.decode('ascii'))
+        print(err.decode('ascii'))
+
     if decompiler.returncode != 0:
         print("[-] Error during decompilation. Return code of apktool: {}".format(decompiler.returncode))
         shutil.rmtree(outDir)
@@ -70,10 +72,11 @@ def repack_apk(decompiled_path, hooks, output, verbose):
     __inject_payload(decompiled_path, hooks)
     __add_necessary_permissions(decompiled_path, hooks)
 
-    decompiler = sp.Popen("apktool b -o {} {}".format(output, decompiled_path).split(" "), stdout=sp.PIPE)
+    decompiler = sp.Popen("apktool b -o {} {}".format(output, decompiled_path).split(" "), stdout=sp.PIPE, stderr=sp.PIPE)
     out,err = decompiler.communicate()
     if verbose:
         print(out.decode('ascii'))
+        print(err.decode('ascii'))
 
     __run_jarsigner(
         "-verbose -keystore ~/.android/debug.keystore -storepass android -keypass android -digestalg SHA1 -sigalg "

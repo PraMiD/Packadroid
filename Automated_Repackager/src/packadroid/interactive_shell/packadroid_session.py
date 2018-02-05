@@ -13,7 +13,7 @@ class PackadroidSession():
         self.__original_apk_path = None
         self.__original_apk_dec_path = None
         self.__hooks = []
-        self.__verbose = True
+        self.__verbose = False
         self.__activities = []
 
     def get_hooks(self):
@@ -143,4 +143,4 @@ class PackadroidSession():
             Value  of 1 indicates that verbose logging should be activated.
         """
         self.__verbose = (value == 1)
-        print(self.__verbose)
+        print("[*] Verbose set to: " + str(self.__verbose))
