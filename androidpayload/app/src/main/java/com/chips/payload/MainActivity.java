@@ -1,4 +1,4 @@
-package android.chips.payload;
+package com.chips.payload;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;

