@@ -71,15 +71,31 @@ class PackadroidPrompt(Cmd):
     def do_help(self, args):
         """ Usage: help - shows available methods without problems"""
         x = inspect.getmembers(PackadroidPrompt)
-        print("Available methods")
+        #print("Available methods")
         for tuple in x:
             if tuple[0].startswith("do_"):
-                line = tuple[0][3:].ljust(30)
+                command = tuple[0][3:].ljust(30)
+                desc = ""
                 if tuple[1].__doc__ is None:
-                    line += "<no documentation available>"
+                    desc = "<no documentation available>"
                 else:
-                    line += str(tuple[1].__doc__)
-                print(line)
+                    desc = str(tuple[1].__doc__)
+                
+                #lousy try to format console output for help message :(
+                length = 73
+                formatteddesc = ""
+                i = 0
+                while i < len(desc):
+                    if i % length == 0 and i > 0:
+                        formatteddesc += "\n                               "
+                        if desc[i] != " ":
+                            formatteddesc += desc[i]
+                        i += 1
+                    else:
+                        formatteddesc += desc[i]
+                        i += 1
+                    
+                print(command + formatteddesc + "\n")
 
     def do_set_verbose(self, args):
         """ Usage: set_verbose <value>, enables (1) or disables (0) the verbose mode which shows enriched shell output."""
