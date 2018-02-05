@@ -107,10 +107,11 @@ class PackadroidPrompt(Cmd):
         return SUC
 
     def do_list_permissions(self, args):
+        """ Usage: list_permissions -- List the permissions of the loaded original application."""
         if not self.__packadroid_session.is_original_apk_loaded():
             print("No original application loaded!")
             return ERR
-            
+
         self.__packadroid_session.list_permissions()
         return SUC
 
@@ -180,6 +181,17 @@ class PackadroidPrompt(Cmd):
             print("Metasploit is not installed! Please install Metasploit")
             return ERR
         self.__packadroid_session.start_meterpreter_handler(args[0], args[1])
+
+    def do_unload_session(self, args):
+        """ Usage: unload_session -- Deletes all settings of the current session. Deletes folder of decompiled apps/payloads."""
+
+        if not self.__packadroid_session.is_original_apk_loaded():
+            print("No original application loaded!")
+            return ERR
+
+        self.__packadroid_session.cleanup()
+        self.__setup_session()
+        return SUC
 
     def execute_commands(self, cmds):
         """
