@@ -94,7 +94,7 @@ def __inject_payload(original_apk_dec_path, hooks):
     for path in payload_paths:
         payload = os.path.join(path, "smali")
         for subf in os.listdir(payload):
-            if subf is not "android":
+            if subf != "android":
                 os.system("cp -r {} {}".format(os.path.join(payload, subf), original))
 
 def __add_necessary_permissions(original_apk_dec_path, hooks):
