@@ -41,8 +41,11 @@ def decompile_apk(apkPath, verbose):
     return outDir
 
 def __run_jarsigner(command):
-    """ executes the jarsigner with specific options 
-        given in the 'command' argument"""
+    """ executes the jarsigner with specific options given in the 'command' argument
+
+    :param command: Parameters for jarsigner.
+    :type command: str
+    """
 
     print("[*] Sign the repacked application")
     full_command = "jarsigner " + command

