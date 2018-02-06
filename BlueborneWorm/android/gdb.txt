@@ -1,5 +1,0 @@
-The program is not being run.
-The program is not being run.
-The program is not being run.
-The program is not being run.
-[mSearching for 'aeiou' in range: 0x35be0000 - 0x35be1000 -> With my own command[0m
