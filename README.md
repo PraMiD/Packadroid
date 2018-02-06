@@ -44,7 +44,7 @@ The commands can be listed inside the interactive shell using the *help* command
 | load_original             | load_original <path_to_original_apk> | Load an .apk file you want inject code to. 
 | remove_hook               | remove_hook <index>  | Remove hook with given index. For retrieving the index of each hook use the list_added_hooks function.
 | repack                    | repack [repacked_apk_path] | Repack the .apk file as configured!
-| set_verbose               | set_verbose <value>, enables (1) or disables (0) the verbose modewhich shows enriched shell output.
+| set_verbose               | set_verbose <value> | Enables (1) or disables (0) the verbose modewhich shows enriched shell output.
 | start_meterpreter_handler | start_meterpreter_handler <IP> <lport> | Generate a handler which is catchign the reverse shell 
 | unload_session            | unload_session | Deletes all settings of the current session. Deletes folder of decompiled apps/payloads.
 

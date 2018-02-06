@@ -98,7 +98,7 @@ class PackadroidPrompt(Cmd):
                 print(command + formatteddesc + "\n")
 
     def do_set_verbose(self, args):
-        """ Usage: set_verbose <value>, enables (1) or disables (0) the verbose mode which shows enriched shell output."""
+        """ Usage: set_verbose <value> -- Enables (1) or disables (0) the verbose mode which shows enriched shell output."""
         args = args.split(" ")
         if len(args) == 1:
             value = int(args[0])
@@ -113,7 +113,7 @@ class PackadroidPrompt(Cmd):
             return ERR
 
     def do_load_original(self, args):
-        """ Usage: load_original <path_to_original_apk> -- Load an .apk file you want inject code to. """
+        """ Usage: load_original <path_to_original_apk> -- Load an .apk file you want inject code to."""
         args = args.split(" ")
         if len(args) != 1:
             print("You have to provide the path to an valid .apk file!")
@@ -143,11 +143,11 @@ class PackadroidPrompt(Cmd):
         return SUC
 
     def do_list_added_hooks(self, args):
-        """ Usage: list_added_hooks   -- Lists all hooks which have already been added by the user. Each hook has an ID which can be used to remove hooks. """
+        """ Usage: list_added_hooks   -- Lists all hooks which have already been added by the user. Each hook has an ID which can be used to remove hooks."""
         self.__packadroid_session.list_hooks()
 
     def do_repack(self, args):
-        """ Usage: repack [repacked_apk_path] -- Repack the .apk file as configured! """
+        """ Usage: repack [repacked_apk_path] -- Repack the .apk file as configured!"""
         args = args.split(" ")
         if len(args) != 0 and args[0] != "":
             if args[0] != "":
@@ -170,7 +170,7 @@ class PackadroidPrompt(Cmd):
 
     
     def do_remove_hook(self, args):
-        """ Usage: remove_hook <index>  -- Remove hook with given index. For retrieving the index of each hook use the list_added_hooks function,. """
+        """ Usage: remove_hook <index>  -- Remove hook with given index. For retrieving the index of each hook use the list_added_hooks function."""
         if len(args) != 1:
             print("Unknown format!")
             return ERR
@@ -184,7 +184,7 @@ class PackadroidPrompt(Cmd):
 
 
     def do_start_meterpreter_handler(self, args):
-        """ Usage: start_meterpreter_handler <IP> <lport> -- Generate a handler which is catchign the reverse shell """
+        """ Usage: start_meterpreter_handler <IP> <lport> -- Generate a handler which is catchign the reverse shell."""
         args = args.split(" ")
         if len(args) != 2:
             print("Unknown format!")
