@@ -69,7 +69,7 @@ class PackadroidPrompt(Cmd):
         self.__packadroid_session.generate_meterpreter(args[0], args[1])
 
     def do_help(self, args):
-        """ Usage: help - shows available methods without problems"""
+        """ Usage: help - shows available methods without problems."""
         x = inspect.getmembers(PackadroidPrompt)
         #print("Available methods")
         for tuple in x:
