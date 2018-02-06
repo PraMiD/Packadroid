@@ -43,6 +43,8 @@ def decompile_apk(apkPath, verbose):
 def __run_jarsigner(command):
     """ executes the jarsigner with specific options 
         given in the 'command' argument"""
+
+    print("[*] Sign the repacked application")
     full_command = "jarsigner " + command
     proc = sp.Popen(full_command, stdout=sp.PIPE, shell=True)
     (out, err) = proc.communicate()

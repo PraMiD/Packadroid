@@ -92,8 +92,8 @@ class PackadroidSession():
         proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
         (out, err) = proc.communicate()
 
-        if "invalid" in out.lower() or \
-                "error" in out.lower():
+        if "invalid" in out.decode('ascii').lower() or \
+            "error" in out.decode('ascii').lower():
             print(out)
             sys.exit(1)
 
@@ -139,7 +139,7 @@ class PackadroidSession():
 
         dec_apks = set([h.get_payload_dec_path() for h in self.__hooks])
         for dec_apk_path in dec_apks:
-            print("[*] Removing directory {} containing decompiled payload!")
+            print("[*] Removing directory containing decompiled payload!")
             shutil.rmtree(dec_apk_path)
 
 
