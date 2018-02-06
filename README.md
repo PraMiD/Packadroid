@@ -66,7 +66,7 @@ We deliver the following precompiled payloads:
 | com.tum.team05.packadroidpayload.Payload | deleteAllContacts | payload/precompiled.apk | Deletes all contacts when the hook is triggered. |
 | com.tum.team05.packadroidpayload.Payload | startRecording    | payload/precompiled.apk | Starts recording using the microphone. The output is written to the *output.mp3* file in the standard working directory of the application. |
 | com.tum.team05.packadroidpayload.Payload | sendSms           | payload/precompiled.apk | Sends an SMS to a dummy phone number and static content. Feel free to adapt the soruce code of the payload! |
-| com.tum.team05.packadroidpayload.Payload | transferContacts  | payload/precompiled.apk | Transfer a list of all contact to a dummy EMail address. |
+| com.tum.team05.packadroidpayload.Payload | transferContacts  | payload/precompiled.apk | Transfer a list of all contacts via SMS. |
 
 The provided precompiled payloads currently do not request runtime *Android* permissions.
 Therefore, they do not work for *Android* versions greater thatn 6.0 (API level 23).
