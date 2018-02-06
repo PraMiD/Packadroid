@@ -38,11 +38,15 @@ def decompile_apk(apkPath, verbose):
         print("[-] Error during decompilation.")
         shutil.rmtree(outDir)
         return None
-    return outDir
+    return outDirThe path to the repacked .apk file.
+            None is returned on any errors
 
 def __run_jarsigner(command):
-    """ executes the jarsigner with specific options 
-        given in the 'command' argument"""
+    """ executes the jarsigner with specific options given in the 'command' argument
+
+    :param command: Parameters for jarsigner.
+    :type command: str
+    """
 
     print("[*] Sign the repacked application")
     full_command = "jarsigner " + command

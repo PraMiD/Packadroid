@@ -58,10 +58,4 @@ class Hook:
         return self.__payload_apk_path
 
     def print_hook(self):
-        #print("Type: " + self.__type)
-        #print("Location: " + self.__location)
-        #print("Class: " + self.__class)
-        #print("Method: " + self.__method)
-        #print("Payload APK: " + self.__payload_apk_path)
-        #print("Payload Path: " + self.__payload_dec_path)
         return self.__type + " " + self.__location + " " + self.__class + " " + self.__method + " " + self.__payload_apk_path + " " + self.__payload_dec_path
