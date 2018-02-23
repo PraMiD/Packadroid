@@ -1,4 +1,4 @@
-Packadroid -- A Framework for Repackaging Android Applications
+Packadroid -- A Framework for Repackaging of Android Applications
 ==============================================================
 
 **Packadroid** is a framework that allows the automated repackaging *Android* applications.
