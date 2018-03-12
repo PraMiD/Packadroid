@@ -25,7 +25,7 @@ if args['batch'] is not None:
         print("Cannot load batch file from location {}".format(batch_file))
         sys.exit(1)
     with open(batch_file, "r") as f:
-        cmds = f.readlines()
+        cmds = f.read().splitlines()
     try:
         # Execute the commands given in the batch file first!
         prompt.execute_commands(cmds)
